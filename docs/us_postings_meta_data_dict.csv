@@ -1,0 +1,3 @@
+table_name,schema_name,column_name,data_type,null?,default,kind,expression,comment,database_name,autoincrement
+POSTINGS_META,US,KEY,"{""type"":""TEXT"",""length"":16777216,""byteLength"":16777216,""nullable"":true,""fixed"":false}",true,,COLUMN,,Meta key,EMSI,
+POSTINGS_META,US,VALUE,"{""type"":""TEXT"",""length"":16777216,""byteLength"":16777216,""nullable"":true,""fixed"":false}",true,,COLUMN,,Meta value,EMSI,
