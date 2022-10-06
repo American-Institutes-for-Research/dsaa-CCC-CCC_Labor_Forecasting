@@ -50,13 +50,16 @@ for i, f in enumerate(my_list):
 
         cdf = pd.DataFrame(columns=skill_cols)
         cdf['Postings count'] = 0
-        skilldf['POSTED_YYYYMM'] = skilldf.POSTED_YEAR.astype('str') + skilldf.POSTED_MONTH.astype('str')
+        skilldf['POSTED_YYYYMM'] = skilldf.POSTED_YEAR.astype('str') + skilldf.POSTED_MONTH.astype('str').str.zfill(2)
         skilldf['POSTED_YYYYMM'] = skilldf['POSTED_YYYYMM'].astype('int')
-        skilldf['EXPIRED_YYYYMM'] = skilldf.EXPIRED_YEAR.astype("str") + skilldf.EXPIRED_MONTH.astype('str')
+        skilldf['EXPIRED_YYYYMM'] = skilldf.EXPIRED_YEAR.astype("str") + skilldf.EXPIRED_MONTH.astype('str').str.zfill(2)
         skilldf.loc[skilldf.EXPIRED_YYYYMM == 'nannan', 'EXPIRED_YYYYMM'] = '999999'
         skilldf['EXPIRED_YYYYMM'] = skilldf['EXPIRED_YYYYMM'].astype('int')
-        dates = skilldf['POSTED_YYYYMM'].unique()
-        dates.sort()
+
+        #dates = skilldf['POSTED_YYYYMM'].unique()
+        #dates.sort()
+        dates = [int(str(y) + str(m).zfill(2)) for y in range(2018, 2023) for m in range(1, 13)]
+
         for yyyymm in dates:
             filt_df = skilldf.loc[(skilldf.POSTED_YYYYMM >= yyyymm) &
                                   ((skilldf.EXPIRED_YYYYMM.isna()) |
@@ -73,10 +76,11 @@ for i, f in enumerate(my_list):
         else:
             exist_cols = [i for i in cdf.columns if i in tot_df.columns]
             for col in exist_cols:
-                tot_df[col] = tot_df[col] + cdf[col]
+                result = tot_df[col].fillna(0) + cdf[col].fillna(0)
+                #assert all(result >= tot_df[col].fillna(0))
+                tot_df[col] = result
             new_cols = [i for i in cdf.columns if i not in tot_df.columns]
-            tot_df = tot_df.merge(cdf[new_cols], left_index=True, right_index=True, how='left')
-            if i == 2:
-                pass
+            tot_df = tot_df.merge(cdf[new_cols].fillna(0), left_index=True, right_index=True, how='left')
+            tot_df = tot_df.fillna(0)
             tot_df.to_csv('data/test monthly counts.csv')
         pass
