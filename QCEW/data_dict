@@ -1,0 +1,15 @@
+Data Dictionary
+
+Variables:
+yr.qtr = last 2 digits of year (20XX) + '.' + quarter of year, ex: 2015Q1 = 15.1
+yr.qtr.month = last 2 digits of year (20XX) + '.' + quarter of year + '.' month of quarter, ex: January 2015 = 15.1.1
+naics = NAICS code of corresponding data row
+emp_month = employment count - changes with yr.qtr.month
+wages_qtr = total wages paid to all employees in the quarter - changes with yr.qtr
+estabs_qtr = number of unique establishments - changes with yr.qtr
+ownership = ownership category of corresponding data row. Either private, federal, state, or local.
+
+Zero values are copied directly from the source file. Some estimates are suppressed due to privacy concerns stemming from low
+establishment counts. In other cases, estimates appear in one year but not the following, and vice versa.
+
+Missing/NaN values mean the corresponding NAICS code is not found in the corresponding year-level file.
