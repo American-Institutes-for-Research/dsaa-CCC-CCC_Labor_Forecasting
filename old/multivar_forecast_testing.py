@@ -50,7 +50,7 @@ def run_transformer_test(EPOCHS=200, pca_components = 30,N_SAMPLES = 100,DIM_FF 
 
     start = datetime.now()
     # df = pd.read_csv('data/test monthly counts 09302022.csv')
-    df = pd.read_csv('data/test monthly counts.csv')
+    df = pd.read_csv('../data/test monthly counts.csv')
     df = df.rename({'Unnamed: 0':'date'}, axis=1)
     df['month']= df['date'].str[5:7].astype('int')
     df = df.fillna(method='ffill')
@@ -239,7 +239,7 @@ def run_transformer_test(EPOCHS=200, pca_components = 30,N_SAMPLES = 100,DIM_FF 
     result_log['DECODE'] = DECODE
     result_log['BATCH'] = BATCH
 
-    if os.path.exists('result_logs/test transformer model params.csv'):
+    if os.path.exists('../result_logs/test transformer model params.csv'):
         pd.DataFrame(result_log).T.to_csv('result_logs/test transformer model params.csv', mode = 'a', header=False)
     else:
         pd.DataFrame(result_log).T.to_csv('result_logs/test transformer model params.csv')

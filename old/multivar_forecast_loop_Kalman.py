@@ -7,7 +7,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
 from darts import TimeSeries, concatenate
 from darts.dataprocessing.transformers import Scaler
-from darts.models import TransformerModel
+from darts.models.forecasting.kalman_forecaster import KalmanForecaster
 from darts.metrics import mape, rmse
 from darts.utils.timeseries_generation import datetime_attribute_timeseries
 from darts.utils.likelihood_models import QuantileRegression
@@ -19,7 +19,7 @@ def prepare_data():
     '''
 
     # df = pd.read_csv('data/test monthly counts 09302022.csv')
-    df = pd.read_csv('data/test monthly counts.csv')
+    df = pd.read_csv('../data/test monthly counts.csv')
     df = df.rename({'Unnamed: 0':'date'}, axis=1)
     df['month']= df['date'].str[5:7].astype('int')
     df = df.fillna(method='ffill')
@@ -27,13 +27,14 @@ def prepare_data():
     df = df.iloc[7:55,:].reset_index(drop=True)
 
     # create times series index
+    date_idx = pd.to_datetime(df['date'])
+
     # normalize all columns based on job postings counts
     df = df.drop('date', axis=1)
     job_counts = df['Postings count'].copy()
     raw_df = df.copy()
     df = df.divide(job_counts, axis=0)
     df['Postings count'] = job_counts
-    date_idx = pd.to_datetime(df['date'])
     df = df.set_index(pd.DatetimeIndex(date_idx))
 
     # establish target columns as ones with an average obs count over 100
@@ -44,58 +45,26 @@ def prepare_data():
     ccc_df.columns = ['skill', 'count']
     ccc_skills = ['Skill: ' + i for i in ccc_df['skill']]
     targets = set(ccc_skills).intersection(set(targets)).union(set(['Postings count']))
-    targets = list(targets)
-    targets.sort()
     return df, targets
 
-def run_transformer_loop(EPOCHS=200, pca_components = 30,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
-                    ,ENCODE = 4, DECODE = 4 , BATCH = 32, result_log = None, pred_df = None, start_val= 0):
+def run_kalman_loop(df, targets, result_log = None, pred_df = None, start_val= 0):
     '''
     params:
         df - job posting counts dataframe
         targets - set of targets to run loop on
-       EPOCS - number of epocs the model trains on
-       pca_components - number of PCA components created
-       N_SAMPLES - number of times a prediction is sampled from a probabilistic model
-       DIM_FF - dimensions of the feedforward network
-        HEADS -  The number of heads in the multi-head attention mechanism
-        ENCODE - encoder layers
-        DECODE - decoder layers
-        BATCH - batch size
         result_log - previous result log data frame
         pred_df - previous prediction results dataframe
         start_val - skill number to start at for interrupted runs
-    Function to test run transformer model with various parameters, and understand runtime
+    Function to test run Kalman model with various parameters, and understand runtime
     Just runs on a single target
     '''
-
+    SPLIT = .9
     date_run = datetime.now().strftime('%H_%M_%d_%m_%Y')
-    FEAT = 32           # d_model = number of expected features in the inputs, up to 512
-
-    ACTF = "relu"       # activation function, relu (default) or gelu
-    SCHLEARN = None     # a PyTorch learning rate scheduler; None = constant rate
-    LEARN = 1e-3        # learning rate
-    VALWAIT = 1         # epochs to wait before evaluating the loss on the test/validation set
-    DROPOUT = 0.1       # dropout rate
-
-    RAND = 42           # random seed
-    N_JOBS = 3          # parallel processors to use;  -1 = all processors
-
-    # default quantiles for QuantileRegression
-    QUANTILES = [0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 0.99]
-
-    SPLIT = 0.9         # train/test %
-
-    FIGSIZE = (9, 6)
 
     if result_log is None:
         result_log = pd.DataFrame()
+    targets = list(targets)
 
-    df = pd.read_csv('data/test monthly counts season-adj.csv', index_col=0)
-    date_idx = pd.to_datetime(df.index)
-    df = df.set_index(pd.DatetimeIndex(date_idx))
-
-    targets = df.columns[1:]
     targets = targets[start_val:]
 
     # set a variable to target
@@ -116,6 +85,7 @@ def run_transformer_loop(EPOCHS=200, pca_components = 30,N_SAMPLES = 100,DIM_FF 
         df_feat = df[features]
         df_feat = pd.DataFrame(MinMaxScaler().fit_transform(df_feat))
         df_feat.index = df.index
+
         # # run PCA to reduce number of features
         # pca = PCA(n_components=min(pca_components, len(features)))
         # res_pca = pca.fit_transform(df_feat)
@@ -137,6 +107,7 @@ def run_transformer_loop(EPOCHS=200, pca_components = 30,N_SAMPLES = 100,DIM_FF 
         #ts_P = pd.Series([i[0] for i in ts_P.values()])
         # convert features to time series
         ts_covF = TimeSeries.from_dataframe(df_feat, fill_missing_dates=True, freq=None)
+
 
         # create train and test split
         ts_train, ts_test = ts_P.split_after(SPLIT)
@@ -160,10 +131,9 @@ def run_transformer_loop(EPOCHS=200, pca_components = 30,N_SAMPLES = 100,DIM_FF 
         covF_ttest = scalerF.transform(covF_test)
         covF_t = scalerF.transform(ts_covF)
 
-
         # make sure data are of type float
         covF_ttrain = covF_ttrain.astype(np.float32)
-        covF_ttest = covF_ttrain.astype(np.float32)
+        covF_ttest = covF_ttest.astype(np.float32)
         covF_t = covF_t.astype(np.float32)
 
         # add monthly indicators
@@ -184,39 +154,15 @@ def run_transformer_loop(EPOCHS=200, pca_components = 30,N_SAMPLES = 100,DIM_FF 
 
         covT_t = covT_t.astype(np.float32)
 
-        model = TransformerModel(
-         #                   input_chunk_length = INLEN,
-         #                   output_chunk_length = N_FC,
-                            input_chunk_length= 12,
-                            output_chunk_length= 31,
-                            batch_size = BATCH,
-                            n_epochs = EPOCHS,
-                            model_name = "Transformer_test_skill",
-                            nr_epochs_val_period = VALWAIT,
-                            d_model = FEAT,
-                            nhead = HEADS,
-                            num_encoder_layers = ENCODE,
-                            num_decoder_layers = DECODE,
-                            dim_feedforward = DIM_FF,
-                            dropout = DROPOUT,
-                            activation = ACTF,
-                            random_state=RAND,
-                            likelihood=QuantileRegression(quantiles=QUANTILES),
-                            optimizer_kwargs={'lr': LEARN},
-                            add_encoders={"cyclic": {"future": ["month"]}},
-                            save_checkpoints=True,
-                            force_reset=True
-                            )
-        model.fit(ts_ttrain,
-                        past_covariates=covF_ttrain,
-                        verbose=True)
+        model = KalmanForecaster()
+        model.fit(ts_ttrain, covF_ttrain)
 
         #model.save('models/test model.pth.tar')
 
-        ts_tpred_long = model.predict(   n=31,
-                                    num_samples=N_SAMPLES,
-                                    n_jobs=N_JOBS,
-                                    verbose=True)
+        ts_tpred_long = model.predict(future_covariates=covF_t,
+                                    n=31,
+                                    num_samples=100,
+                                    )
         # mark the test set for evaluation
         ts_tpred = ts_tpred_long[:len(ts_test)]
 
