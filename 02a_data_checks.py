@@ -7,12 +7,10 @@ from statsmodels.tsa.stattools import kpss
 from statsmodels.tsa.seasonal import seasonal_decompose
 from matplotlib import pyplot
 
-df, targets = prepare_data()
-targets = targets[1:]
+df = pd.read_csv('data/test monthly counts season-adj.csv',index_col=0)
+targets = df.columns[1:]
 result_df = pd.DataFrame(index=targets, columns=['ADF','KPSS','Seasonality'])
 df.index = pd.to_datetime(df.index)
-job_counts = df['Postings count'].copy()
-df = df.divide(job_counts, axis=0)
 
 def adf_test(timeseries):
     dftest = adfuller(timeseries, autolag='AIC')

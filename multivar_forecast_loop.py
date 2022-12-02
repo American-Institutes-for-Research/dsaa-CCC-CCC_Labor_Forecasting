@@ -37,7 +37,9 @@ def prepare_data():
     df = df.set_index(pd.DatetimeIndex(date_idx))
 
     # establish target columns as ones with an average obs count over 100
-    targets = raw_df.mean(numeric_only=True).loc[raw_df.mean(numeric_only=True)>100].index
+    # targets = raw_df.mean(numeric_only=True).loc[raw_df.mean(numeric_only=True)>100].index
+    # trying going down to 50
+    targets = raw_df.mean(numeric_only=True).loc[raw_df.mean(numeric_only=True) > 50].index
 
     # filter to only skills trained by CCC
     ccc_df = pd.read_excel('emsi_skills_api/course_skill_counts.xlsx')
@@ -97,6 +99,10 @@ def run_transformer_loop(EPOCHS=200, pca_components = 30,N_SAMPLES = 100,DIM_FF 
 
     targets = df.columns[1:]
     targets = targets[start_val:]
+
+    # add in COVID case count data
+    covid_df = pd.read_csv('data/illinois covid case counts.csv')
+
 
     # set a variable to target
     print('Number of targets:',len(targets))
