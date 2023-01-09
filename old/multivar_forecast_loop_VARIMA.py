@@ -13,40 +13,6 @@ from darts.utils.timeseries_generation import datetime_attribute_timeseries
 from darts.utils.likelihood_models import QuantileRegression
 from datetime import datetime
 
-def prepare_data():
-    '''
-    load data in preparation for running the transformer loop over each feature
-    '''
-
-    # df = pd.read_csv('data/test monthly counts 09302022.csv')
-    df = pd.read_csv('../data/test monthly counts.csv')
-    df = df.rename({'Unnamed: 0':'date'}, axis=1)
-    df['month']= df['date'].str[5:7].astype('int')
-    df = df.fillna(method='ffill')
-    # 7-55 filter is to remove months with 0 obs
-    df = df.iloc[7:55,:].reset_index(drop=True)
-
-    # create times series index
-    date_idx = pd.to_datetime(df['date'])
-
-    # normalize all columns based on job postings counts
-    df = df.drop('date', axis=1)
-    job_counts = df['Postings count'].copy()
-    raw_df = df.copy()
-    df = df.divide(job_counts, axis=0)
-    df['Postings count'] = job_counts
-    df = df.set_index(pd.DatetimeIndex(date_idx))
-
-    # establish target columns as ones with an average obs count over 100
-    targets = raw_df.mean(numeric_only=True).loc[raw_df.mean(numeric_only=True)>100].index
-
-    # filter to only skills trained by CCC
-    ccc_df = pd.read_excel('emsi_skills_api/course_skill_counts.xlsx')
-    ccc_df.columns = ['skill', 'count']
-    ccc_skills = ['Skill: ' + i for i in ccc_df['skill']]
-    targets = set(ccc_skills).intersection(set(targets)).union(set(['Postings count']))
-    return df, targets
-
 def run_VARIMA_loop(df, targets, result_log = None, pred_df = None, start_val= 0):
     '''
     params:
