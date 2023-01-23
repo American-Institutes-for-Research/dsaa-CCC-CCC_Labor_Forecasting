@@ -85,12 +85,16 @@ def invert_transformation(df_train, df_forecast, diffs_made):
     df_fc = df_forecast.copy()
     columns = df_train.columns
     for col in columns:
-        # Roll back 2nd Diff
-        if diffs_made == 2:
-            df_fc[str(col) + '_1d'] = (df_train[col].iloc[-1] - df_train[col].iloc[-2]) + df_fc[
-                str(col) + '_2d'].cumsum()
-        # Roll back 1st Diff
-        df_fc[str(col) + '_forecast'] = df_train[col].iloc[-1] + df_fc[str(col) + '_1d'].cumsum()
+        diff_col = df_fc[str(col) + '_' + str(diffs_made) + 'd']
+        diffs_made_temp = diffs_made
+        while diffs_made_temp >= 0:
+            # Roll back each level of diff
+            init_val = df_train[col].iloc[-1]
+            for i in range(-1, (diffs_made_temp*-1)-1, -1):
+                init_val -= df_train[col].iloc[i]
+            diff_col = init_val + diff_col.cumsum()
+            diffs_made_temp -= 1
+        df_fc[str(col) + '_forecast'] = diff_col
     return df_fc
 
 # helper function: get forecast values for selected quantile q and insert them in dataframe dfY
@@ -180,7 +184,8 @@ def visualize_predictions(fcast_filename, sample = 10):
     #act_df = act_df.divide(job_counts, axis=0)
     #act_df['Postings count'] = job_counts
 
-    os.mkdir('output/exhibits/'+run_name)
+    if not os.path.exists('output/exhibits/'+run_name):
+        os.mkdir('output/exhibits/'+run_name)
 
     for i in pred_df.columns[:sample]:
         if i != 'Postings count':

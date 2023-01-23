@@ -7,7 +7,7 @@ import datetime
 # tot_df = pd.read_csv('data/test monthly counts.csv')
 
 filenum = len(os.listdir('data/us_postings'))
-n = 10
+# n = 10
 my_list = os.listdir('data/us_postings')
 # tot_df = pd.read_csv('data/test monthly counts checkpoint.csv', index_col=0)
 for i, f in enumerate(my_list):

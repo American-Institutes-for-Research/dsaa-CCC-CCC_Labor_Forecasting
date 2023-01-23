@@ -277,8 +277,10 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
             pred_df = pd.DataFrame(index = pred_row.index)
         else:
             pred_df.index = pred_row.index
+        columns = pred_df.columns.copy()
         pred_df = pd.concat([pred_df, pred_row],axis=1)
-
+        pred_df.index = pred_row.index
+        pred_df.columns = columns.append(pd.Index([t]))
         # retrieve forecast series for chosen quantiles,
         # inverse-transform each series,
         # insert them as columns in a new dataframe dfY

@@ -3,6 +3,7 @@ import os
 from statsmodels.tsa.seasonal import seasonal_decompose
 from dateutil.relativedelta import relativedelta
 
+# TODO: implement with differing levels of skill hierarchy
 # load full data set to get columns of the panel data set
 df = pd.read_csv('data/test monthly counts.csv', nrows = 1)
 columns = [i for i in df.columns if 'Skill:' in i]
