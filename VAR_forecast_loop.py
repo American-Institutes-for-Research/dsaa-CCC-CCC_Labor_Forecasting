@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 import sys
-from datetime import datetime
+import datetime
+from dateutil.relativedelta import relativedelta
 from statsmodels.tsa.api import VAR
 
 from statsmodels.stats.stattools import durbin_watson
@@ -29,7 +30,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
     '''
     run_name = run_name + ' lvl ' + hierarchy_lvl
 
-    date_run = datetime.now().strftime('%H_%M_%d_%m_%Y')
+    date_run = datetime.datetime.now().strftime('%H_%M_%d_%m_%Y')
     if result_log is None:
         result_log = pd.DataFrame()
 
@@ -120,7 +121,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         # skip if no observations of skill exist
         if df[t].sum() == 0:
             continue
-        start = datetime.now()
+        start = datetime.datetime.now()
         print('Modeling',n,'of',len(targets),'skills')
 
         # loop to try testing multiple sets of variables until we find one that's causally correlated with the target
@@ -281,12 +282,10 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
 
         # create forecasted date index; our forecast starts at the first time step of the test data set and extends
         # 43 - input_len_used time steps forward
-        dates = ['3/1/2022', '4/1/2022', '5/1/2022', '6/1/2022', '7/1/2022',
-                 '8/1/2022', '9/1/2022', '10/1/2022', '11/1/2022', '12/1/2022', '1/1/2023','2/1/2023', '3/1/2023',
-                 '4/1/2023', '5/1/2023', '6/1/2023', '7/1/2023', '8/1/2023', '9/1/2023', '10/1/2023', '11/1/2023',
-                 '12/1/2023', '1/1/2024', '2/1/2024', '3/1/2024', '4/1/2024', '5/1/2024', '6/1/2024', '7/1/2024',
-                 '8/1/2024', '9/1/2024']
-        date_idx = pd.DatetimeIndex(dates)
+        min_date = datetime.date(2022, 3, 1)
+        max_date = min_date + relativedelta(months=+42-input_len_used)
+        dates = pd.period_range(min_date, max_date, freq='M')
+        date_idx = pd.DatetimeIndex(dates.to_timestamp())
 
         if diffs_made > 0:
             df_forecast = pd.DataFrame(fc, index=date_idx, columns=df_feat.columns + '_'+str(diffs_made)+'d')
@@ -328,7 +327,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         row = pd.Series()
         row['target'] = t
         row['model training result'] = target_tracker.loc[t]
-        row['runtime'] = datetime.now() - start
+        row['runtime'] = datetime.datetime.now() - start
         row['num_features_used'] = len(df_feat.columns)
         row['Normalized RMSE'] = accuracy_prod['rmse']/(df[t].max() - df[t].min())
         row['MAPE']= accuracy_prod['mape']

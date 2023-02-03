@@ -56,7 +56,8 @@ def seasonality_loop(df, name):
 
 df = pd.read_csv('data/test monthly counts.csv')
 seasonality_loop(df, 'skill')
-cat_df = pd.read_csv('data/test monthly counts category.csv')
+df2 = pd.read_csv('data/test monthly counts categories.csv')
+cat_df = df2[[i for i in df2.columns if 'Skill cat:' in i] + ['Unnamed: 0', 'Postings count']]
 seasonality_loop(cat_df, 'category')
-scat_df = pd.read_csv('data/test monthly counts subcategory.csv')
+scat_df = df2[[i for i in df2.columns if 'Skill subcat:' in i] + ['Unnamed: 0', 'Postings count']]
 seasonality_loop(scat_df, 'subcategory')

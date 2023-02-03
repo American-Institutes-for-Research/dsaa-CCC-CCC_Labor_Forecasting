@@ -1,9 +1,12 @@
 from datetime import datetime, timedelta
 import pandas as pd
-from linearmodels import IVGMM
+from darts.models.forecasting.linear_regression_model import LinearRegressionModel
+from darts import TimeSeries
+from linearmodels import PanelOLS
+import numpy as np
 from dateutil.relativedelta import relativedelta
 
-def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0,
+def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues =5,
                          input_len_used = 12, targets_sample = None, min_month_avg = 50, min_tot_inc = 50, cand_features_num=20
                          , ccc_taught_only = True, run_name = ''):
     '''
@@ -11,6 +14,7 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0,
         result_log - previous result log data frame
         pred_df - previous prediction results dataframe
         start_val - skill number to start at for interrupted runs
+        test_tvalues - number of time steps to put in test data set
         input_len_used - how many months prior to train on
         targets_sample - length of subset of targets to train on; used for shortening runtimes of tests
         min_month_avg - minimum monthly average job postings for skill to be forecasted for
@@ -48,6 +52,9 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0,
     county_idx = pd.Index(df.index.str.split("'").map(lambda x: x[1]))
     df = df.set_index([county_idx, date_idx])
 
+    # TODO: need to fix something in the panel generation code as we get duplicate rows, but for testing purposes just drop dupes for now
+    df = df[~df.index.duplicated(keep='first')]
+
     # include on CCC-taught skills
     if ccc_taught_only:
         ccc_df = pd.read_excel('emsi_skills_api/course_skill_counts.xlsx')
@@ -57,10 +64,10 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0,
         targets = list(targets)
         targets.sort()
 
-    targets = df.columns[1:]
     targets = targets[start_val:]
     if targets_sample is not None:
         targets = targets[:targets_sample]
+    targets = [i for i in targets if 'Skill' in i]
 
     # add in COVID case count data
     # covid_df = pd.read_csv('data/NYT COVID us-counties clean.csv')
@@ -85,7 +92,9 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0,
     print('Number of targets:', len(targets))
     if pred_df is None:
         pred_df = pd.DataFrame()
-    features_main = df.corr()
+    # TODO: implement additional covariates beyond just target skills
+    features_main = df[targets].corr()
+
     for n, t in enumerate(targets):
 
         endog= df[t]
@@ -125,25 +134,50 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0,
             data[x] = exogs[x]
             data['D' + x] = exogs[x].groupby(level=0).diff()
 
-        # Set up the instruments -- lags of the endog levels for different time periods
-        instrnames = []
-        for n, t in enumerate(date_idx.drop_duplicates()):
-            for k in range(1, input_len_used + 1):
-                col = 'ILVL_t%iL%i' % (n, k)
-                instrnames.append(col)
-                data[col] = endog.groupby(level=0).shift(k)
-                data.loc[endog.index.get_level_values(1) != t, col] = 0
+        # trying a non-IV model
+        # # Set up the instruments -- lags of the endog levels for different time periods
+        # instrnames = []
+        # for n, t in enumerate(date_idx.drop_duplicates()):
+        #     for k in range(1, input_len_used + 1):
+        #         col = 'ILVL_t%iL%i' % (n, k)
+        #         instrnames.append(col)
+        #         data[col] = endog.groupby(level=0).shift(k)
+        #         data.loc[endog.index.get_level_values(1) != t, col] = 0
+        #
+        # dropped = data.dropna()
+        # dropped['CLUSTER_VAR'] = dropped.index.get_level_values(0)
+        #
+        # # make sure columns are not duplicated to ensure full rank
+        # zero_cols = dropped.sum().loc[dropped.sum()==0].index
+        # instrnames = [i for i in instrnames if i not in zero_cols]
+        # dupes = dropped[instrnames].sum().duplicated()
+        # instrnames = [i for i in instrnames if i not in dupes.loc[dupes].index and 'L1' in i]
+        # model = IVGMM(dropped[Dename], dropped[Dxnames], dropped[LDenames], dropped[instrnames].iloc[:,:12],
+        #                    weight_type='clustered', clusters=dropped['CLUSTER_VAR'])
+        # model.fit()
 
+
+        # detect linearly dependent row vectors
         dropped = data.dropna()
-        dropped['CLUSTER_VAR'] = dropped.index.get_level_values(0)
+        dropped = dropped.reset_index().rename({'level_0': 'county', 'level_1': 'month'}, axis=1)
+        dropped = dropped.set_index('month')
 
-        # make sure columns are not duplicated to ensure full rank
-        zero_cols = dropped.sum().loc[dropped.sum()==0].index
-        instrnames = [i for i in instrnames if i not in zero_cols]
-        dupes = dropped[instrnames].sum().duplicated()
-        instrnames = [i for i in instrnames if i not in dupes.loc[dupes].index and 'L1' in i]
-        model = IVGMM(dropped[Dename], dropped[Dxnames], dropped[LDenames], dropped[instrnames].iloc[:,:12],
-                           weight_type='clustered', clusters=dropped['CLUSTER_VAR'])
-        model.fit()
+        train_targets = {}
+        test_targets = {}
+        train_exogs = {}
+        test_exogs = {}
 
+        for c in dropped.county.unique():
+            train_data = dropped.loc[dropped.county == c].iloc[0:-test_tvalues,:]
+            test_data = dropped.loc[dropped.county == c].iloc[-test_tvalues:, :]
+            train_targets[c] = TimeSeries.from_series(train_data[t].copy(), fill_missing_dates=True, freq='MS')
+            test_targets[c] = TimeSeries.from_series(test_data[t].copy(), fill_missing_dates=True, freq='MS')
+            train_exogs[c] = TimeSeries.from_series(train_data[xnames].copy(), fill_missing_dates=True, freq='MS')
+            test_exogs[c] = TimeSeries.from_series(test_data[xnames].copy(), fill_missing_dates=True, freq='MS')
+        # model = PanelOLS(dependent=train_data[Dename], exog = train_data[Dxnames], entity_effects= True, time_effects= True,
+        #                  check_rank= False, drop_absorbed=True)
+        # fitted = model.fit()
+        model = LinearRegressionModel(output_chunk_length=43 - input_len_used, lags_past_covariates=input_len_used)
+        model.fit(list(train_targets.values()), past_covariates=list(train_exogs.values()))
+        preds = model.predict(n=43, series=test_exogs[c])
         pass

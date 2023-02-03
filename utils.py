@@ -1,3 +1,4 @@
+import glob
 from darts import TimeSeries, concatenate
 import darts.metrics
 import pandas as pd
@@ -124,13 +125,25 @@ def predQ(ts_t, q, scalerP, dfY, ts_test, quantile=True):
         return [q50_RMSE, q50_MAPE]
 
 # Analyze results of predictions
-def results_analysis(fcast_filename):
+def results_analysis(fcast_filename, create_vizs = False):
     # verify we're using a model output file
     assert('predicted job posting shares' in fcast_filename)
     df = pd.read_csv('output/' + fcast_filename+'.csv', index_col=0)
-    countdf = pd.read_csv('data/test monthly counts season-adj.csv', index_col=0)
 
-    raw_df = pd.read_csv("data/test monthly counts.csv", index_col=0)
+    if 'lvl subcategory' in fcast_filename:
+        countdf = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+        raw_df = pd.read_csv("data/test monthly counts categories.csv", index_col=0)
+        raw_df = raw_df[[i for i in raw_df.columns if 'Skill cat:' not in i]]
+
+    elif 'lvl category' in fcast_filename:
+        countdf = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+        raw_df = pd.read_csv("data/test monthly counts categories.csv", index_col=0)
+        raw_df = raw_df[[i for i in raw_df.columns if 'Skill subcat:' not in i]]
+
+    else:
+        countdf = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
+        raw_df = pd.read_csv("data/test monthly counts.csv", index_col=0)
+
     raw_df = raw_df.fillna(method='ffill')
     raw_df = raw_df.iloc[7:55, :]
 
@@ -162,10 +175,13 @@ def results_analysis(fcast_filename):
 
     result_df.to_csv('output/predicted changes '+ fcast_filename.replace('predicted job posting shares ','')+'.csv')
 
+    if create_vizs:
+        visualize_predictions(fcast_filename)
+
 def forecast_graph(pred, actual, label, folder):
     pred.name = 'Predicted'
     actual.name = 'Actual'
-
+    label = label.replace('/','_')
     pred.plot.line()
     actual.plot.line()
     plt.legend()
@@ -173,20 +189,46 @@ def forecast_graph(pred, actual, label, folder):
     plt.savefig(folder+'/'+label+'.png')
     plt.clf()
 
-def visualize_predictions(fcast_filename, sample = 10):
-    run_name = fcast_filename.replace('predicted job posting shares ','')
-    pred_df = pd.read_csv("output/"+fcast_filename+".csv", index_col=0)
-    act_df = pd.read_csv('data/test monthly counts season-adj.csv', index_col=0)
-    pred_df.index = pd.to_datetime(pred_df.index)
-    act_df.index = pd.to_datetime(act_df.index)
+def visualize_predictions(fcast_filename = None, sample = 10, topfiles = None):
+    if fcast_filename is not None:
+        filenames = ['output\\'+fcast_filename+'.csv']
 
-    #job_counts = act_df['Postings count'].copy()
-    #act_df = act_df.divide(job_counts, axis=0)
-    #act_df['Postings count'] = job_counts
+    if topfiles is not None:
+        search_dir = "output/"
+        # remove anything from the list that is not a file (directories, symlinks)
+        # of files (presumably not including directories)
+        files = list(filter(os.path.isfile, glob.glob(search_dir + "*")))
+        files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+        filenames = files[0:topfiles]
 
-    if not os.path.exists('output/exhibits/'+run_name):
-        os.mkdir('output/exhibits/'+run_name)
+    for name in filenames:
+        run_name = name.replace('predicted job posting shares ','')
+        run_name = run_name.replace('output\\', '')
+        run_name = run_name.replace('.csv', '')
 
-    for i in pred_df.columns[:sample]:
-        if i != 'Postings count':
-            forecast_graph(pred_df[i], act_df[i], i.replace('Skill: ','')+' graph', 'output/exhibits/'+run_name)
+        pred_df = pd.read_csv(name, index_col=0)
+        if 'lvl subcategory' in run_name:
+            act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+        elif 'lvl category' in run_name:
+            act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+        else:
+            act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
+        pred_df.index = pd.to_datetime(pred_df.index)
+        act_df.index = pd.to_datetime(act_df.index)
+
+        #job_counts = act_df['Postings count'].copy()
+        #act_df = act_df.divide(job_counts, axis=0)
+        #act_df['Postings count'] = job_counts
+
+        if not os.path.exists('output/exhibits/'+run_name):
+            os.mkdir('output/exhibits/'+run_name)
+
+        if sample == None:
+            pred_cols = pred_df.columns
+        else:
+            pred_cols = pred_df.columns[:sample]
+
+        for i in pred_cols:
+            if i != 'Postings count':
+                skill_name = i.replace('Skill: ','').replace('Skill cat:','').replace('Skill subcat:','')
+                forecast_graph(pred_df[i], act_df[i], skill_name +' graph', 'output/exhibits/'+run_name)
