@@ -261,6 +261,22 @@ def agg_panel_data(df):
     count_df = count_df.reset_index().rename({'Unnamed: 0':'county'},axis=1)
     count_df = count_df.groupby('county').mean()
     count_df = count_df/count_df.sum()
-    result_df = df.groupby()
-    pass
+    # there are two Lake counties, so divide that weight by half. Technically should weight separately, but the
+    # counties are close enough in size that it is not a big difference.
+    count_df.loc['Lake'] = count_df.loc['Lake']/2
+
+    # cut to only county name
+    df.index = df.index.map(lambda idx: idx.split(",")[0])
+
+    df = df.merge(count_df, left_index=True, right_index=True)
+
+    # apply weights to columns
+    values = [i for i in df.columns if i not in ['month','Postings count']]
+    df = df.reset_index(drop = True)
+    for c in values:
+        df[c] = df[c].multiply(df['Postings count'])
+
+    result_df = df.groupby('month').sum()
+    result_df = result_df.drop('Postings count', axis=1)
+    return result_df
 

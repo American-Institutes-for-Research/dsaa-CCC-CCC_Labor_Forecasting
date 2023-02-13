@@ -11,4 +11,5 @@ from utils import visualize_predictions
 # visualize_predictions('predicted job posting shares 13_03_12_01_2023 no filtered skills VAR v2 - Copy')
 # visualize_predictions('predicted job posting shares 17_58_12_01_2023 filtered skills VAR no difference')
 #visualize_predictions('predicted job posting shares 15_51_25_01_2023 VAR no differencing lvl category', sample=None)
-visualize_predictions('predicted job posting shares 08_17_09_02_2023 DLPM initial run lvl category', sample=None, panel_data= True)
+# visualize_predictions('predicted job posting shares 08_17_09_02_2023 DLPM initial run lvl category', sample=None, panel_data= True)
+visualize_predictions('predicted job posting shares 12_54_13_02_2023 DLPM 3 month input lvl category', sample=None, panel_data= True)
