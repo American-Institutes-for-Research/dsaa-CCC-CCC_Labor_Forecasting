@@ -189,7 +189,8 @@ def forecast_graph(pred, actual, label, folder):
     plt.savefig(folder+'/'+label+'.png')
     plt.clf()
 
-def visualize_predictions(fcast_filename = None, sample = 10, topfiles = None):
+def visualize_predictions(fcast_filename = None, sample = 10, topfiles = None, panel_data = False):
+
     if fcast_filename is not None:
         filenames = ['output\\'+fcast_filename+'.csv']
 
@@ -207,6 +208,9 @@ def visualize_predictions(fcast_filename = None, sample = 10, topfiles = None):
         run_name = run_name.replace('.csv', '')
 
         pred_df = pd.read_csv(name, index_col=0)
+        if panel_data:
+            pred_df= pred_df.rename({'Unnamed: 1':'month'}, axis=1)
+            pred_df = agg_panel_data(pred_df)
         if 'lvl subcategory' in run_name:
             act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
         elif 'lvl category' in run_name:
@@ -232,3 +236,31 @@ def visualize_predictions(fcast_filename = None, sample = 10, topfiles = None):
             if i != 'Postings count':
                 skill_name = i.replace('Skill: ','').replace('Skill cat:','').replace('Skill subcat:','')
                 forecast_graph(pred_df[i], act_df[i], skill_name +' graph', 'output/exhibits/'+run_name)
+
+
+def agg_panel_data(df):
+    '''
+    aggregate counties from panel data to get overall estimates for Chicago MSA
+
+    :param
+     df: dataframe of postings share predictions made by the panel model by county
+
+    :return:
+    DataFrame of aggregated postings share predictions for overall Chicago MSA
+    '''
+
+
+    # load data for number of postings occuring in each county
+    # count_df = pd.read_csv('data/test monthly counts county panel.csv')
+    # count_df = count_df.set_index('Unnamed: 0')
+    # count_df['Postings count'].to_csv('data/county panel postings sample size.csv')
+    count_df = pd.read_csv('data/county panel postings sample size.csv', index_col = 0)
+
+    # we will weight the posting shares by average postings for each county
+    count_df.index = count_df.index.map(lambda idx: idx.split("'")[1])
+    count_df = count_df.reset_index().rename({'Unnamed: 0':'county'},axis=1)
+    count_df = count_df.groupby('county').mean()
+    count_df = count_df/count_df.sum()
+    result_df = df.groupby()
+    pass
+

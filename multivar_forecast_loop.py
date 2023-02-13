@@ -380,7 +380,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         result_log['ccc_taught_only'] = ccc_taught_only
         result_log['input_len_used'] = input_len_used
 
-        pd.DataFrame(result_log).T.to_csv('result_logs/looped transformer model results '+
+        pd.DataFrame(result_log).to_csv('result_logs/looped transformer model results '+
                                           date_run+' '+run_name +
                                           '.csv')
 

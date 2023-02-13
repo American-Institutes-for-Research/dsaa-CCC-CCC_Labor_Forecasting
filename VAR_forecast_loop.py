@@ -342,7 +342,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         result_log['input_len_used'] = input_len_used
         result_log['differences_made'] = diffs_made
 
-        pd.DataFrame(result_log).T.to_csv('result_logs/looped VAR model results '+
+        pd.DataFrame(result_log).to_csv('result_logs/looped VAR model results '+
                                           date_run+' '+run_name +
                                           '.csv')
 
