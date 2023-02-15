@@ -10,6 +10,8 @@ from statsmodels.tsa.vector_ar.vecm import coint_johansen
 from statsmodels.tsa.stattools import grangercausalitytests
 import statsmodels
 import matplotlib.pyplot as plt
+import shutil
+
 
 def grangers_causation_matrix(data, variables, target, test='ssr_chi2test', verbose=False):
     """Check Granger Causality of all possible combinations of the Time series.
@@ -33,7 +35,7 @@ def grangers_causation_matrix(data, variables, target, test='ssr_chi2test', verb
             if verbose: print(f'Y = {r}, X = {target}, P Values = {p_values}')
             min_p_value = np.min(p_values)
         except statsmodels.tools.sm_exceptions.InfeasibleTestError:
-            print('infeasible test for ', target, 'and',r)
+            print('infeasible test for ', target, 'and', r)
             min_p_value = np.nan
         except ValueError:
             print('infeasible test for ', target, 'and', r)
@@ -42,30 +44,52 @@ def grangers_causation_matrix(data, variables, target, test='ssr_chi2test', verb
         df.loc[r, target] = min_p_value
     return df
 
+
 def cointegration_test(df, alpha=0.05):
-    """Perform Johanson's Cointegration Test and Report Summary"""
-    out = coint_johansen(df,-1,5)
-    d = {'0.90':0, '0.95':1, '0.99':2}
+    '''
+    Perform Johanson's Cointegration Test and Report Summary from dataframe
+    :param df: dataframe of variables to test for cointegration
+    :param alpha: int, alpha value of test
+    :return:
+    Series, Whether test result is significant for each column
+    '''
+
+    out = coint_johansen(df, -1, 5)
+    d = {'0.90': 0, '0.95': 1, '0.99': 2}
     traces = out.lr1
-    cvts = out.cvt[:, d[str(1-alpha)]]
-    def adjust(val, length= 6): return str(val).ljust(length)
+    cvts = out.cvt[:, d[str(1 - alpha)]]
+    # def adjust(val, length= 6): return str(val).ljust(length)
 
     # Summary
-    #print('Name   ::  Test Stat > C(95%)    =>   Signif  \n', '--'*20)
+    # print('Name   ::  Test Stat > C(95%)    =>   Signif  \n', '--'*20)
     result = pd.Series(index=df.columns)
     for col, trace, cvt in zip(df.columns, traces, cvts):
-        #print(adjust(col), ':: ', adjust(round(trace,2), 9), ">", adjust(cvt, 8), ' =>  ' , trace > cvt)
+        # print(adjust(col), ':: ', adjust(round(trace,2), 9), ">", adjust(cvt, 8), ' =>  ' , trace > cvt)
         result.loc[col] = trace > cvt
     return result
 
+
 def adf_test(timeseries):
+    '''
+    Perform Augmented Dickey-Fuller test on a series
+    :param timeseries: array-like, Time series to test
+    :return:
+    int, p-value of test
+    '''
     dftest = adfuller(timeseries, autolag='AIC')
-    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic','p-value','#Lags Used','Number of Observations Used'])
-    for key,value in dftest[4].items():
-        dfoutput['Critical Value (%s)'%key] = value
+    dfoutput = pd.Series(dftest[0:4], index=['Test Statistic', 'p-value', '#Lags Used', 'Number of Observations Used'])
+    for key, value in dftest[4].items():
+        dfoutput['Critical Value (%s)' % key] = value
     return dfoutput['p-value']
 
+
 def forecast_accuracy(forecast, actual):
+    '''
+    Calculate forecast performance metrics
+    :param forecast: Array-like, forecast values
+    :param actual: Array-like, actual values
+    :return: dict of forecast performance metrics
+    '''
     mape = np.mean(np.abs(forecast - actual) / np.abs(actual))  # MAPE
     me = np.mean(forecast - actual)  # ME
     mae = np.mean(np.abs(forecast - actual))  # MAE
@@ -82,7 +106,13 @@ def forecast_accuracy(forecast, actual):
 
 
 def invert_transformation(df_train, df_forecast, diffs_made):
-    """Revert back the differencing to get the forecast to original scale."""
+    '''
+    Revert back the differencing to get the forecast to original scale.
+    :param df_train: DataFrame of training data
+    :param df_forecast: DataFrame of forecasts made
+    :param diffs_made: number of differences taken
+    :return: transformed df_forecast with reverted differencing
+    '''
     df_fc = df_forecast.copy()
     columns = df_train.columns
     for col in columns:
@@ -91,21 +121,27 @@ def invert_transformation(df_train, df_forecast, diffs_made):
         while diffs_made_temp >= 0:
             # Roll back each level of diff
             init_val = df_train[col].iloc[-1]
-            for i in range(-1, (diffs_made_temp*-1)-1, -1):
+            for i in range(-1, (diffs_made_temp * -1) - 1, -1):
                 init_val -= df_train[col].iloc[i]
             diff_col = init_val + diff_col.cumsum()
             diffs_made_temp -= 1
         df_fc[str(col) + '_forecast'] = diff_col
     return df_fc
 
-# helper function: get forecast values for selected quantile q and insert them in dataframe dfY
-def predQ(ts_t, q, scalerP, dfY, ts_test, quantile=True):
+
+def predQ(ts_t, q, scalerP, ts_test, quantile=True):
+    '''
+    helper function: get forecast values for selected quantile q
+    :param ts_t: darts TimeSeries, predicted values matching test data set months
+    :param q: int, quantile to get values for
+    :param scalerP: Scalar object of ts_t
+    :param ts_test: darts TimeSeries, actual values from test data set
+    :param quantile: quantile to get forecast values for
+    :return: list, [RMSE, MAPE] of series
+    '''
     if quantile:
         ts_tq = ts_t.quantile_timeseries(q)
         ts_q = scalerP.inverse_transform(ts_tq)
-        s = TimeSeries.pd_series(ts_q)
-        header = "Q" + format(int(q * 100), "02d")
-        dfY[header] = s
         if q == 0.5:
             ts_q50 = ts_q
             q50_RMSE = darts.metrics.rmse(ts_q50, ts_test)
@@ -114,21 +150,26 @@ def predQ(ts_t, q, scalerP, dfY, ts_test, quantile=True):
             print("MAPE:", f'{q50_MAPE:.2f}')
             return [q50_RMSE, q50_MAPE]
     else:
-        ts_tq = ts_t
-        ts_q = scalerP.inverse_transform(ts_tq)
-        s = TimeSeries.pd_series(ts_q)
-        ts_q50 = ts_q
-        q50_RMSE = darts.metrics.rmse(ts_q50, ts_test)
-        q50_MAPE = darts.metrics.mape(ts_q50, ts_test)
+        ts_q = scalerP.inverse_transform(ts_t)
+        q50_RMSE = darts.metrics.rmse(ts_q, ts_test)
+        q50_MAPE = darts.metrics.mape(ts_q, ts_test)
         print("RMSE:", f'{q50_RMSE:.2f}')
         print("MAPE:", f'{q50_MAPE:.2f}')
         return [q50_RMSE, q50_MAPE]
 
+
 # Analyze results of predictions
-def results_analysis(fcast_filename, create_vizs = False):
+def results_analysis(fcast_filename, create_vizs=False):
+    '''
+    Analyze the results of a particular forecast run
+    :param fcast_filename: str, filename of the forecasts to analyze
+    :param create_vizs: bool, whether to create visualizations of the run's performance
+    :return:
+    None
+    '''
     # verify we're using a model output file
-    assert('predicted job posting shares' in fcast_filename)
-    df = pd.read_csv('output/' + fcast_filename+'.csv', index_col=0)
+    assert ('predicted job posting shares' in fcast_filename)
+    df = pd.read_csv('output/' + fcast_filename + '.csv', index_col=0)
 
     if 'lvl subcategory' in fcast_filename:
         countdf = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
@@ -169,30 +210,58 @@ def results_analysis(fcast_filename, create_vizs = False):
     # add sample size to the results
     month_counts = raw_df.mean()
     month_counts.name = 'Monthly average obs'
-    result_df = result_df.merge(month_counts, left_index= True, right_index=True)
+    result_df = result_df.merge(month_counts, left_index=True, right_index=True)
 
     result_df.index = [i.replace('Skill: ', '') for i in result_df.index]
 
-    result_df.to_csv('output/predicted changes '+ fcast_filename.replace('predicted job posting shares ','')+'.csv')
+    result_df.to_csv(
+        'output/predicted changes/predicted changes ' + fcast_filename.replace('predicted job posting shares ',
+                                                                               '') + '.csv')
 
     if create_vizs:
         visualize_predictions(fcast_filename)
 
-def forecast_graph(pred, actual, label, folder):
-    pred.name = 'Predicted'
+
+def forecast_graph(preds, actual, col, label, folder):
+    '''
+    Create graph comparing prediction model(s) to actual data
+    :param preds: dict of DataFrames, keys are labels of prediction models, values are Series of different prediction model
+        outputs to graph
+    :param actual: DataFrames, actual data to compare
+    :param col: string, name of column to model
+    :param label: string, title/filename to call
+    :param folder: string, folder to save
+    :return:
+    None
+    '''
+
+    for key, pred in zip(preds.keys(), preds.values()):
+        pred = pred[col]
+        pred.name = key
+        pred.plot.line()
+
+    label = label.replace('/', '_')
+    actual = actual[col]
     actual.name = 'Actual'
-    label = label.replace('/','_')
-    pred.plot.line()
     actual.plot.line()
     plt.legend()
     plt.title(label)
-    plt.savefig(folder+'/'+label+'.png')
+    plt.savefig(folder + '/' + label + '.png')
     plt.clf()
 
-def visualize_predictions(fcast_filename = None, sample = 10, topfiles = None, panel_data = False):
 
+def visualize_predictions(fcast_filename=None, sample=10, topfiles=None, panel_data=False, model_name='Predicted'):
+    '''
+    Visualize the predictions against the actual data
+    :param fcast_filename: string, name of data with the forecasts
+    :param sample: int, sample of predicted variables to take
+    :param topfiles: None or int, number of most recent files in output folder to make predictions for
+    :param panel_data: bool, whether data is panel or not
+    :return:
+    None
+    '''
     if fcast_filename is not None:
-        filenames = ['output\\'+fcast_filename+'.csv']
+        filenames = ['output\\' + fcast_filename + '.csv']
 
     if topfiles is not None:
         search_dir = "output/"
@@ -202,30 +271,32 @@ def visualize_predictions(fcast_filename = None, sample = 10, topfiles = None, p
         files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
         filenames = files[0:topfiles]
 
+    if fcast_filename is None and topfiles is None:
+        raise ('must specify either fcast_filename or topfiles')
+
     for name in filenames:
-        run_name = name.replace('predicted job posting shares ','')
+        run_name = name.replace('predicted job posting shares ', '')
         run_name = run_name.replace('output\\', '')
         run_name = run_name.replace('.csv', '')
 
         pred_df = pd.read_csv(name, index_col=0)
-        if panel_data:
-            pred_df= pred_df.rename({'Unnamed: 1':'month'}, axis=1)
-            pred_df = agg_panel_data(pred_df)
+        pred_df = clean_data_for_graphs(pred_df, run_name, panel_data=panel_data)
+
         if 'lvl subcategory' in run_name:
             act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
         elif 'lvl category' in run_name:
             act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
         else:
             act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
-        pred_df.index = pd.to_datetime(pred_df.index)
+
         act_df.index = pd.to_datetime(act_df.index)
 
-        #job_counts = act_df['Postings count'].copy()
-        #act_df = act_df.divide(job_counts, axis=0)
-        #act_df['Postings count'] = job_counts
+        # job_counts = act_df['Postings count'].copy()
+        # act_df = act_df.divide(job_counts, axis=0)
+        # act_df['Postings count'] = job_counts
 
-        if not os.path.exists('output/exhibits/'+run_name):
-            os.mkdir('output/exhibits/'+run_name)
+        if not os.path.exists('output/exhibits/' + run_name):
+            os.mkdir('output/exhibits/' + run_name)
 
         if sample == None:
             pred_cols = pred_df.columns
@@ -234,8 +305,26 @@ def visualize_predictions(fcast_filename = None, sample = 10, topfiles = None, p
 
         for i in pred_cols:
             if i != 'Postings count':
-                skill_name = i.replace('Skill: ','').replace('Skill cat:','').replace('Skill subcat:','')
-                forecast_graph(pred_df[i], act_df[i], skill_name +' graph', 'output/exhibits/'+run_name)
+                skill_name = i.replace('Skill: ', '').replace('Skill cat:', '').replace('Skill subcat:', '')
+                forecast_graph({model_name: pred_df}, act_df, i, skill_name + ' graph', 'output/exhibits/' + run_name)
+
+
+def clean_data_for_graphs(pred_df, run_name, panel_data=False):
+    '''
+    read
+    :param name: string with filename of predictions
+    :param panel_data: whether data is panel by county or not
+    :return:
+    pred_df: dataframe of predictions
+    '''
+
+    if panel_data:
+        pred_df = pred_df.rename({'Unnamed: 1': 'month'}, axis=1)
+        pred_df = agg_panel_data(pred_df)
+
+    pred_df.index = pd.to_datetime(pred_df.index)
+
+    return pred_df
 
 
 def agg_panel_data(df):
@@ -249,21 +338,20 @@ def agg_panel_data(df):
     DataFrame of aggregated postings share predictions for overall Chicago MSA
     '''
 
-
     # load data for number of postings occuring in each county
     # count_df = pd.read_csv('data/test monthly counts county panel.csv')
     # count_df = count_df.set_index('Unnamed: 0')
     # count_df['Postings count'].to_csv('data/county panel postings sample size.csv')
-    count_df = pd.read_csv('data/county panel postings sample size.csv', index_col = 0)
+    count_df = pd.read_csv('data/county panel postings sample size.csv', index_col=0)
 
     # we will weight the posting shares by average postings for each county
     count_df.index = count_df.index.map(lambda idx: idx.split("'")[1])
-    count_df = count_df.reset_index().rename({'Unnamed: 0':'county'},axis=1)
+    count_df = count_df.reset_index().rename({'Unnamed: 0': 'county'}, axis=1)
     count_df = count_df.groupby('county').mean()
-    count_df = count_df/count_df.sum()
+    count_df = count_df / count_df.sum()
     # there are two Lake counties, so divide that weight by half. Technically should weight separately, but the
     # counties are close enough in size that it is not a big difference.
-    count_df.loc['Lake'] = count_df.loc['Lake']/2
+    count_df.loc['Lake'] = count_df.loc['Lake'] / 2
 
     # cut to only county name
     df.index = df.index.map(lambda idx: idx.split(",")[0])
@@ -271,8 +359,8 @@ def agg_panel_data(df):
     df = df.merge(count_df, left_index=True, right_index=True)
 
     # apply weights to columns
-    values = [i for i in df.columns if i not in ['month','Postings count']]
-    df = df.reset_index(drop = True)
+    values = [i for i in df.columns if i not in ['month', 'Postings count']]
+    df = df.reset_index(drop=True)
     for c in values:
         df[c] = df[c].multiply(df['Postings count'])
 
@@ -280,3 +368,56 @@ def agg_panel_data(df):
     result_df = result_df.drop('Postings count', axis=1)
     return result_df
 
+
+def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='skill', sample=None):
+    '''
+    Produce comparisons of two or more sets of results
+    :params:
+    runnames: list of filenames of the runs of results to use for comparisons
+    labels: list of labels to use as shorthand for runnames in charts. Should be same length as runnames
+    title: string, title to give the comparison
+    panel_indicators: list of booleans indicating whether run files are panels or not
+    :return:
+    None
+    '''
+
+    if hierarchy_lvl == 'subcategory':
+        act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+    elif hierarchy_lvl == 'category':
+        act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+    else:
+        act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
+
+    act_df.index = pd.to_datetime(act_df.index)
+
+    dfs = {}
+    cols = []
+    for n, l in enumerate(labels):
+        dfs[l] = pd.read_csv('output/' + runnames[n] + '.csv', index_col=0)
+        if panel_indicators[n]:
+            dfs[l] = dfs[l].rename({'Unnamed: 1': 'month'}, axis=1)
+            dfs[l] = agg_panel_data(dfs[l])
+
+        dfs[l].index = pd.DatetimeIndex(dfs[l].index)
+        # establish the set of columns that all data sets share
+        if n == 0:
+            cols = dfs[l].columns
+        else:
+            cols = [i for i in cols if i in dfs[l].columns.values]
+
+    # produce visualizations with all runs on the same diagram
+    if sample == None:
+        cols = cols
+    else:
+        cols = cols[:sample]
+
+    # create graphs for each column
+    if os.path.exists('output/exhibits/' + title):
+        shutil.rmtree('output/exhibits/' + title)
+    os.mkdir('output/exhibits/' + title)
+
+    for c in cols:
+        skill_name = c.replace('Skill: ', '').replace('Skill cat:', '').replace('Skill subcat:', '')
+        forecast_graph(dfs, act_df, c, skill_name + ' graph', 'output/exhibits/' + title)
+
+    pass
