@@ -317,7 +317,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         ts_tpred = ts_tpred_long[:len(ts_test)]
 
         # take the rest of the predictions and transform them back into a dataframe
-        ts_tfut = ts_tpred_long[len(ts_test):]
+        ts_tfut = ts_tpred_long
 
         # remove the scaler transform
         ts_tfut = scalerP.inverse_transform(ts_tfut)
@@ -351,7 +351,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         dfY["Actual"] = TimeSeries.pd_series(ts_test)
 
         # call helper function predQ, once for every quantile
-        perf_scores = [predQ(ts_tpred, q, scalerP, dfY, ts_test) for q in QUANTILES]
+        perf_scores = [predQ(ts_tpred, q, scalerP, ts_test) for q in QUANTILES]
         perf_scores = perf_scores[3]
         row = pd.Series()
         row['target'] = t

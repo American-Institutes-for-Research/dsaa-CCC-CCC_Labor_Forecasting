@@ -374,13 +374,14 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
     Produce comparisons of two or more sets of results
     :params:
     runnames: list of filenames of the runs of results to use for comparisons
-    labels: list of labels to use as shorthand for runnames in charts. Should be same length as runnames
+    labels: list of labels to use as shorthand for runnames in charts. Should be same length as runnames. Should take values: 'panel', "VAR", 'transformer'
     title: string, title to give the comparison
     panel_indicators: list of booleans indicating whether run files are panels or not
     :return:
     None
     '''
-
+    valid_labels = ['panel', "VAR", 'transformer']
+    assert all([i in valid_labels for i in labels]),'all labels must be one of panel, VAR, transformer'
     if hierarchy_lvl == 'subcategory':
         act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
     elif hierarchy_lvl == 'category':
@@ -420,4 +421,33 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
         skill_name = c.replace('Skill: ', '').replace('Skill cat:', '').replace('Skill subcat:', '')
         forecast_graph(dfs, act_df, c, skill_name + ' graph', 'output/exhibits/' + title)
 
+    # compare performance metrics
+    # this dataframe keeps track of mean overall metrics by model, and then appends the individual model metrics at the end
+    perf_df = pd.DataFrame(index=['mean'])
+    for n, l in enumerate(labels):
+        log_name = runnames[n].replace('predicted job posting shares','looped '+labels[n]+ ' model results')
+        log_df = pd.read_csv('result_logs/' + log_name + '.csv', index_col=0)
+        # some of the older logs need to be inverted
+        if 'MAPE' not in log_df.columns:
+            log_df = log_df.T
+        log_df = log_df.set_index('target')
+        # if it's panel, metrics are recorded at the target level, so we can drop duplicates from counties
+        if panel_indicators[n]:
+            log_df = log_df[~log_df.index.duplicated(keep='first')]
+
+        # add the model's mean performance over all targets
+        perf_df.loc['mean', 'Normalized RMSE '+labels[n]] = log_df['Normalized RMSE'].astype('float').mean()
+        perf_df.loc['mean','MAPE '+labels[n]] = log_df['MAPE'].astype('float').mean()
+
+        log_df = log_df.rename({'Normalized RMSE':'Normalized RMSE '+labels[n],'MAPE':'MAPE '+labels[n]}, axis=1)
+        # for first loop we need to add the axis values
+        if n == 0:
+            perf_df = pd.concat([perf_df, log_df[['Normalized RMSE '+labels[n],'MAPE '+labels[n]]]])
+
+        # for the rest, we can just merge on axis values
+        else:
+            perf_df.update(log_df[['Normalized RMSE '+labels[n],'MAPE '+labels[n]]])
+
+
+    perf_df.to_excel('output/exhibits/'+title+'/performance comparison.xlsx')
     pass

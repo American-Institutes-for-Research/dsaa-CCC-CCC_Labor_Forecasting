@@ -31,7 +31,6 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill', 'subcategory', 'category'])
-    # TODO: finish cat/subcat panel data creation
     df = pd.read_csv('data/test monthly counts season-adj county ' + hierarchy_lvl + '.csv', index_col=0)
     #df = pd.read_csv('data/test monthly counts county panel season-adj.csv', index_col=0)
     #--------------------
@@ -62,7 +61,6 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
     county_idx = df.index
     df = df.set_index([county_idx, date_idx])
 
-    # TODO: need to fix something in the panel generation code as we get duplicate rows, but for testing purposes just drop dupes for now
     df = df[~df.index.duplicated(keep='first')]
 
     # include on CCC-taught skills
@@ -148,7 +146,7 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
             data[x] = exogs[x]
             data['D' + x] = exogs[x].groupby(level=0).diff()
 
-        # trying a non-IV model
+        # commented out, trying a non-IV model instead
         # # Set up the instruments -- lags of the endog levels for different time periods
         # instrnames = []
         # for n, t in enumerate(date_idx.drop_duplicates()):
@@ -202,7 +200,7 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
             ts_tpred = ts_tpred_long[:test_tvalues]
 
             # take the rest of the predictions and transform them back into a dataframe
-            ts_tfut = ts_tpred_long[test_tvalues:]
+            ts_tfut = ts_tpred_long
             idx = pd.MultiIndex.from_arrays(
                 [np.array([counties[n] for _ in range(len(ts_tfut.time_index.values))]),
                  ts_tfut.time_index.date.astype(str)])
