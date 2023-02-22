@@ -1,5 +1,15 @@
-# create counts of skill categories/subcategories by month
+'''
+Luke Patterson
+01a_create skill category counts.py
 
+Purpose: Create a dataset that represents the number of job postings demanding each skill by month, at the
+category/subcategory level of the EMSI skill hierarchy.
+
+input: data/us_postings/*.csv.gz - raw job postings data obtained from EMSI
+
+output: data/test monthly counts categories.csv
+
+'''
 import os
 import warnings
 warnings.simplefilter(action='ignore')

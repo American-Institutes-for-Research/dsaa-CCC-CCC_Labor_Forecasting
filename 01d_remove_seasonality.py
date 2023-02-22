@@ -1,3 +1,32 @@
+'''
+Luke Patterson
+01d_remove_seasonality.py
+
+Purpose: For each of the hierarchy levels and county/MSA levels, read in the respective counts data set and remove
+    seasonal variation from the time series. Seasonal variation is removed by decomposing each data series into
+    trend, noise, and seasonal components using the seasonal_decompose function from the stats models package.
+    https://www.statsmodels.org/dev/generated/statsmodels.tsa.seasonal.seasonal_decompose.html
+
+    Only the trend component is saved for each skill in the season-adj output files
+
+input:
+    data/test monthly counts category.csv
+    data/test monthly counts subcategory.csv
+    data/test monthly counts skill.csv
+    data/test monthly counts [county name] category.csv - 13 files, one for each county in the Chicago MSA
+    data/test monthly counts [county name] subcategory.csv - 13 files, one for each county in the Chicago MSA
+    data/test monthly counts [county name] skill.csv - 13 files, one for each county in the Chicago MSA
+
+output:
+    data/test monthly counts season-adj category.csv
+    data/test monthly counts season-adj subcategory.csv
+    data/test monthly counts season-adj skill.csv
+    data/test monthly counts season-adj county category.csv
+    data/test monthly counts season-adj county subcategory.csv
+    data/test monthly counts season-adj county skill.csv
+
+'''
+
 import pandas as pd
 from statsmodels.tsa.seasonal import seasonal_decompose
 from matplotlib import pyplot

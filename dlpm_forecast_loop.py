@@ -1,3 +1,20 @@
+'''
+Luke Patterson
+DLPM_forecast_loop.py
+
+Purpose: define function to run dynamic linear panel model on each skill, generate forecasts, and log results
+Input:
+    COVID/chicago_covid_monthly.xlsx -> Covid case counts for chicago
+    One of:
+        data/test monthly counts season-adj category.csv
+        data/test monthly counts season-adj subcategory.csv
+        data/test monthly counts season-adj skill.csv
+
+Output:
+        'result_logs/looped panel model results '+ date_run+' '+run_name +'.csv' <- Log of parameters and performance metrics
+        'output/predicted job posting shares '+date_run+' '+run_name+'.csv') <- Forecasted time series
+'''
+
 from datetime import datetime, timedelta
 import pandas as pd
 from darts.models.forecasting.linear_regression_model import LinearRegressionModel

@@ -1,4 +1,14 @@
-# create counts of skill categories/subcategories by month
+'''
+Luke Patterson
+01a_create panel data skill category.py
+
+Purpose: Create a dataset that represents the number of job postings demanding each skill by month and county, at the
+category/subcategory level of the EMSI skill hierarchy.
+
+input: data/us_postings/*.csv.gz - raw job postings data obtained from EMSI
+
+output: data/test monthly counts [county name] categories.csv - one file for each of the 13 counties in the Chicago MSA
+'''
 
 import os
 import warnings

@@ -1,14 +1,28 @@
+'''
+Luke Patterson
+04_evaluate_courses_degrees.py
+
+Purpose: Aggregate up skill-level demand to course and degree demand metrics
+input:
+    'output/predicted job posting shares '+date_run+' '+run_name+'.csv') <- Forecasted time series
+output:
+    working/course demand evaluations.csv
+    working/degree demand evaluations.csv
+'''
+
 # evaluate course/degree skill demand/growth based on forecasted skill demand
 
 import pandas as pd
 import numpy as np
 from ast import literal_eval
 
+fcast_run_name = 'predicted changes_univariate'
+
 # load data sets
 course_df = pd.read_excel('emsi_skills_api/CCC_courses.xlsx')
 course_df = course_df.drop('Unnamed: 0', axis=1)
 degree_df = pd.read_excel('emsi_skills_api/CCC_degrees.xlsx')
-fcast_df = pd.read_csv("output/predicted changes_univariate.csv")
+fcast_df = pd.read_csv("output/"+fcast_run_name+".csv")
 skill_df = pd.read_csv('data/skill attributes data.csv')
 
 # add skill ID to the forecast dataframe

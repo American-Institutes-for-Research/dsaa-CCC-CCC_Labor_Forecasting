@@ -1,3 +1,14 @@
+'''
+Luke Patterson
+03a_visualize predictions.py
+
+Purpose: Produce visualizations of the forecasted and actual values for skills for a particular model run
+input:
+    'result_logs/looped VAR model results '+ date_run+' '+run_name +'.csv' <- Log of parameters and performance metrics
+    'output/predicted job posting shares '+date_run+' '+run_name+'.csv') <- Forecasted time series
+output:
+    'output/exhibits/'+date_run+' '+run_name/+'*.png') <- visualization graph files
+'''
 import pandas as pd
 from matplotlib import pyplot as plt
 

@@ -1,3 +1,11 @@
+'''
+Luke Patterson
+02_run transformer model.py
+
+Purpose: run ML transformer forecasting model with a variety of parameters
+
+'''
+
 from multivar_forecast_loop import run_transformer_loop
 
 # run_transformer_loop(hierarchy_lvl='category', ccc_taught_only=False)

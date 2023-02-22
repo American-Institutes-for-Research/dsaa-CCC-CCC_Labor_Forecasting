@@ -1,3 +1,16 @@
+'''
+Luke Patterson
+01_create skill counts.py
+
+Purpose: Create a dataset that represents the number of job postings demanding each skill by month, at the skill level
+of the EMSI skill hierarchy.
+
+input: data/us_postings/*.csv.gz - raw job postings data obtained from EMSI
+
+output: data/test monthly counts.csv
+
+'''
+
 import pandas as pd
 import os
 import datetime

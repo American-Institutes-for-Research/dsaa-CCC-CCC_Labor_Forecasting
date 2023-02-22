@@ -1,3 +1,15 @@
+'''
+Luke Patterson
+03b_compare models.py
+
+Purpose: Produce comparisons across multiple models for the forecasted and actual values for skills
+input:
+    'result_logs/looped VAR model results '+ date_run+' '+run_name +'.csv' <- Log of parameters and performance metrics
+    'output/predicted job posting shares '+date_run+' '+run_name+'.csv') <- Forecasted time series
+output:
+    'output/exhibits/'+date_run+' '+run_name/+'*.png') <- visualization graph files
+'''
+
 from utils import compare_results
 
 compare_results(

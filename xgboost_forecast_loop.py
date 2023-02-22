@@ -1,3 +1,21 @@
+'''
+Luke Patterson
+DLPM_forecast_loop.py
+
+Purpose: define function to run xgboost model on each skill, generate forecasts, and log results
+Input:
+    COVID/chicago_covid_monthly.xlsx -> Covid case counts for chicago
+    One of:
+        data/test monthly counts season-adj category.csv
+        data/test monthly counts season-adj subcategory.csv
+        data/test monthly counts season-adj skill.csv
+
+Output:
+        'result_logs/looped xgboost model results '+ date_run+' '+run_name +'.csv' <- Log of parameters and performance metrics
+        'output/predicted job posting shares '+date_run+' '+run_name+'.csv') <- Forecasted time series
+'''
+
+
 # adapting methods from
 # https://towardsdatascience.com/transformer-unleashed-deep-forecasting-of-multivariate-time-series-in-python-9ca729dac019
 import pandas as pd
@@ -317,7 +335,7 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
         result_log['ccc_taught_only'] = ccc_taught_only
         result_log['input_len_used'] = input_len_used
 
-        pd.DataFrame(result_log).T.to_csv('result_logs/looped transformer model results '+
+        pd.DataFrame(result_log).T.to_csv('result_logs/looped xgboost model results '+
                                           date_run+' '+run_name +
                                           '.csv')
 

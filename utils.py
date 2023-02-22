@@ -1,3 +1,11 @@
+'''
+Luke Patterson
+utils.py
+
+Purpose: define various utility functions used throughout other code files
+
+'''
+
 import glob
 from darts import TimeSeries, concatenate
 import darts.metrics

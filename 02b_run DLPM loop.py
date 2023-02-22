@@ -1,3 +1,10 @@
+'''
+Luke Patterson
+02b_run DLPM model.py
+
+Purpose: run dynamic linear panel forecasting model with a variety of parameters
+
+'''
 from dlpm_forecast_loop import run_DLPM_loop
 
 # run_DLPM_loop(run_name='DLPM initial run')
