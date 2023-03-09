@@ -24,11 +24,12 @@ from dateutil.relativedelta import relativedelta
 from statsmodels.tsa.api import VAR
 
 from statsmodels.stats.stattools import durbin_watson
-from utils import grangers_causation_matrix, cointegration_test, adf_test, forecast_accuracy, invert_transformation
+from utils import grangers_causation_matrix, cointegration_test, adf_test, forecast_accuracy, invert_transformation, results_analysis, visualize_predictions
 
 def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12, test_tvalues = 5,
                          input_len_used = 12, targets_sample = None, min_month_avg = 50, min_tot_inc = 50, cand_features_num=100
-                         , ccc_taught_only = True, max_diffs=2, hierarchy_lvl = 'skill', run_name = ''):
+                         , ccc_taught_only = True, max_diffs=2, hierarchy_lvl = 'skill', run_name = '',
+                         analyze_results = True, viz_sample=None):
     '''
     params:
         result_log - previous result log data frame
@@ -41,6 +42,8 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         max_diffs - maximum levels of differences to take when looking for a stationary series.
         hierarchy_lvl - level of EMSI taxonomy to use: skill, subcategory, category
         run_name - name to give run's log/results files.
+        analyze_results - whether to run results analysis at the end of the run
+        viz_sample - param to pass for results analysis
 
     Function to test run transformer model with various parameters, and understand runtime
 
@@ -53,7 +56,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill', 'subcategory', 'category'])
-    df = pd.read_csv('data/test monthly counts season-adj ' + hierarchy_lvl + '.csv', index_col=0)
+    df = pd.read_csv('data/wrong counts/test monthly counts season-adj ' + hierarchy_lvl + '.csv', index_col=0)
 
     #--------------------
     # Feature Selection
@@ -62,7 +65,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
     if hierarchy_lvl == 'skill':
         # look only for those skills with mean 50 postings, or whose postings count have increased by 50 from the first to last month monitored
 
-        raw_df = pd.read_csv('data/test monthly counts.csv')
+        raw_df = pd.read_csv('data/wrong counts/test monthly counts.csv')
         raw_df = raw_df.rename({'Unnamed: 0': 'date'}, axis=1)
         raw_df = raw_df.fillna(method='ffill')
         # 7-55 filter is to remove months with 0 obs
@@ -253,6 +256,8 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
             print('Warning - non-stationary values still detected after',max_diffs, 'difference levels')
             target_tracker[t] = 'Warning - non-stationary values still detected after differencing'
 
+
+
         # select order (P) of the VAR model
         model = VAR(df_differenced)
 
@@ -369,3 +374,8 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
                                       '.csv')
 
 
+    if analyze_results:
+        print('visualizing results')
+        visualize_predictions('predicted job posting shares ' + date_run + ' ' + run_name,
+                              sample=viz_sample)
+        results_analysis('predicted job posting shares ' + date_run + ' ' + run_name)

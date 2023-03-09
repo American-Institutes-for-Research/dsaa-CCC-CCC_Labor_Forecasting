@@ -59,6 +59,7 @@ def seasonality_loop(df, name, county = None):
 
     targets = raw_df.columns
 
+    # todo: check sensitivity for not doing this expand this series
     # expand series out 6 months in either direction with same value so seasonality can be removed
     # for all values in the original series
     new_index = df.index.copy()
@@ -73,6 +74,7 @@ def seasonality_loop(df, name, county = None):
 
     clean_df = df.copy()
 
+    # todo: sensitivity checks for generating this series including noise, and with different moving average periods
     for t in targets:
         print(t)
         if t != 'Postings count' and 't' != 'month':

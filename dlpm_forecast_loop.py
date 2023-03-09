@@ -21,12 +21,13 @@ from darts.models.forecasting.linear_regression_model import LinearRegressionMod
 from darts import TimeSeries
 #from linearmodels import PanelOLS
 import numpy as np
-from utils import forecast_accuracy
+from utils import forecast_accuracy, visualize_predictions, results_analysis
 # from dateutil.relativedelta import relativedelta
 
 def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues =5,
                          input_len_used = 12, targets_sample = None, min_month_avg = 50, min_tot_inc = 50, cand_features_num=20
-                         , ccc_taught_only = True, hierarchy_lvl = 'skill', run_name = ''):
+                         , output_chunk_length = None, ccc_taught_only = True, pred_length = None, hierarchy_lvl = 'skill', run_name = '', visualize_results = True,
+                  viz_sample = None):
     '''
     params:
         result_log - previous result log data frame
@@ -48,7 +49,7 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill', 'subcategory', 'category'])
-    df = pd.read_csv('data/test monthly counts season-adj county ' + hierarchy_lvl + '.csv', index_col=0)
+    df = pd.read_csv('data/wrong counts/test monthly counts season-adj county ' + hierarchy_lvl + '.csv', index_col=0)
     #df = pd.read_csv('data/test monthly counts county panel season-adj.csv', index_col=0)
     #--------------------
     # Feature Selection
@@ -59,7 +60,7 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
     if hierarchy_lvl == 'skill':
         # look only for those skills with mean 50 postings, or whose postings count have increased by 50 from the first to last month monitored
 
-        raw_df = pd.read_csv('data/test monthly counts.csv')
+        raw_df = pd.read_csv('data/wrong counts/test monthly counts.csv')
         raw_df = raw_df.rename({'Unnamed: 0': 'date'}, axis=1)
         raw_df = raw_df.fillna(method='ffill')
         # 7-55 filter is to remove months with 0 obs
@@ -207,10 +208,20 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
         # model = PanelOLS(dependent=train_data[Dename], exog = train_data[Dxnames], entity_effects= True, time_effects= True,
         #                  check_rank= False, drop_absorbed=True)
         # fitted = model.fit()
-        model = LinearRegressionModel(output_chunk_length=43-input_len_used, lags_past_covariates=input_len_used)
         # model = LinearRegressionModel(output_chunk_length=18, lags_past_covariates=12)
+        if output_chunk_length is None:
+            output_chunk_length = 43 - input_len_used
+
+        model = LinearRegressionModel(output_chunk_length=output_chunk_length, lags_past_covariates=input_len_used)
         model.fit(list(train_targets.values()), past_covariates=list(train_exogs.values()))
-        ts_tpreds_long = model.predict(n=43-input_len_used, series=list(train_targets.values()), past_covariates=list(train_exogs.values()))
+
+        if pred_length is None:
+            pred_length = 43-input_len_used
+        ts_tpreds_long = model.predict(n=pred_length, series=list(train_targets.values()), past_covariates=list(train_exogs.values()))
+        # model = LinearRegressionModel(output_chunk_length=43 - input_len_used, lags = input_len_used)
+        # model.fit(list(train_targets.values()))
+        # ts_tpreds_long = model.predict(n=43, series=list(test_targets.values()))
+
         pred_row = pd.Series()
         for n, ts_tpred_long in enumerate(ts_tpreds_long):
             # mark the test set for evaluation
@@ -266,4 +277,7 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
         pred_df.to_csv('output/predicted job posting shares '+
                                           date_run+' '+run_name+
                                           '.csv')
-
+    if visualize_results:
+        print('visualizing results')
+        visualize_predictions('predicted job posting shares '+date_run+' '+run_name, panel_data=True, sample = viz_sample)
+        results_analysis('predicted job posting shares '+date_run+' '+run_name, panel_data=True)

@@ -14,9 +14,9 @@ from utils import compare_results
 
 compare_results(
     runnames=[
-        'predicted job posting shares 15_29_15_02_2023 DLPM 6 month input lvl category',
-        'predicted job posting shares 09_46_26_01_2023 VAR no differencing 6 month input lvl category',
-        'predicted job posting shares 10_41_26_01_2023 Transformer no differencing 6 month input lvl category'
+        'predicted job posting shares 14_54_06_03_2023 DLPM 1 month input lvl subcategory',
+        'predicted job posting shares 14_33_06_03_2023 VAR no differencing 1 month input 3.5 year output lvl subcategory',
+        'predicted job posting shares 14_50_06_03_2023 Transformer 3.5 yr out lvl subcategory'
     ],
     labels=[
         'panel',
@@ -28,6 +28,7 @@ compare_results(
         False,
         False
     ],
-    title = 'VAR_DLPM_ML comparison',
-    hierarchy_lvl= 'category'
+    title = 'VAR_DLPM_ML comparison subcat',
+    hierarchy_lvl= 'subcategory',
+    sample = 20
 )

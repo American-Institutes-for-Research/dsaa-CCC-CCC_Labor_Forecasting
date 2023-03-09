@@ -167,7 +167,7 @@ def predQ(ts_t, q, scalerP, ts_test, quantile=True):
 
 
 # Analyze results of predictions
-def results_analysis(fcast_filename, create_vizs=False):
+def results_analysis(fcast_filename, create_vizs=False, panel_data = False):
     '''
     Analyze the results of a particular forecast run
     :param fcast_filename: str, filename of the forecasts to analyze
@@ -178,20 +178,23 @@ def results_analysis(fcast_filename, create_vizs=False):
     # verify we're using a model output file
     assert ('predicted job posting shares' in fcast_filename)
     df = pd.read_csv('output/' + fcast_filename + '.csv', index_col=0)
+    df = df.rename({'Unnamed: 1': 'month'}, axis=1)
+    if panel_data:
+        df = agg_panel_data(df)
 
     if 'lvl subcategory' in fcast_filename:
-        countdf = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
-        raw_df = pd.read_csv("data/test monthly counts categories.csv", index_col=0)
+        countdf = pd.read_csv('data/wrong counts/test monthly counts season-adj subcategory.csv', index_col=0)
+        raw_df = pd.read_csv("data/wrong counts/test monthly counts categories.csv", index_col=0)
         raw_df = raw_df[[i for i in raw_df.columns if 'Skill cat:' not in i]]
 
     elif 'lvl category' in fcast_filename:
-        countdf = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
-        raw_df = pd.read_csv("data/test monthly counts categories.csv", index_col=0)
+        countdf = pd.read_csv('data/wrong counts/test monthly counts season-adj category.csv', index_col=0)
+        raw_df = pd.read_csv("data/wrong counts/test monthly counts categories.csv", index_col=0)
         raw_df = raw_df[[i for i in raw_df.columns if 'Skill subcat:' not in i]]
 
     else:
-        countdf = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
-        raw_df = pd.read_csv("data/test monthly counts.csv", index_col=0)
+        countdf = pd.read_csv('data/wrong counts/test monthly counts season-adj skill.csv', index_col=0)
+        raw_df = pd.read_csv("data/wrong counts/test monthly counts.csv", index_col=0)
 
     raw_df = raw_df.fillna(method='ffill')
     raw_df = raw_df.iloc[7:55, :]
@@ -291,11 +294,11 @@ def visualize_predictions(fcast_filename=None, sample=10, topfiles=None, panel_d
         pred_df = clean_data_for_graphs(pred_df, run_name, panel_data=panel_data)
 
         if 'lvl subcategory' in run_name:
-            act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+            act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj subcategory.csv', index_col=0)
         elif 'lvl category' in run_name:
-            act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+            act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj category.csv', index_col=0)
         else:
-            act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
+            act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj skill.csv', index_col=0)
 
         act_df.index = pd.to_datetime(act_df.index)
 
@@ -391,11 +394,11 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
     valid_labels = ['panel', "VAR", 'transformer']
     assert all([i in valid_labels for i in labels]),'all labels must be one of panel, VAR, transformer'
     if hierarchy_lvl == 'subcategory':
-        act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+        act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj subcategory.csv', index_col=0)
     elif hierarchy_lvl == 'category':
-        act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+        act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj category.csv', index_col=0)
     else:
-        act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
+        act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj skill.csv', index_col=0)
 
     act_df.index = pd.to_datetime(act_df.index)
 
@@ -432,9 +435,11 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
     # compare performance metrics
     # this dataframe keeps track of mean overall metrics by model, and then appends the individual model metrics at the end
     perf_df = pd.DataFrame(index=['mean'])
+    log_dfs = {}
     for n, l in enumerate(labels):
         log_name = runnames[n].replace('predicted job posting shares','looped '+labels[n]+ ' model results')
         log_df = pd.read_csv('result_logs/' + log_name + '.csv', index_col=0)
+        log_dfs[l] = log_df
         # some of the older logs need to be inverted
         if 'MAPE' not in log_df.columns:
             log_df = log_df.T
@@ -458,4 +463,32 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
 
 
     perf_df.to_excel('output/exhibits/'+title+'/performance comparison.xlsx')
-    pass
+
+    # output statistics on agreement of models in terms of skill demand rankings
+    pred_dfs = {}
+    # Load each data frame of predicted changes and rename columns so they can be merged together
+    for label, runname in zip(labels, runnames):
+        pred_name = runname.replace('predicted job posting shares','predicted changes')
+        df = pd.read_csv('output/predicted changes/'+pred_name+'.csv')
+        df = df.set_index('Unnamed: 0', drop = True)
+        # these columns should be the same across all, so we'll add at the end
+        actual = df['July 2022 actual']
+        avg_obs = df['Monthly average obs']
+        df = df.drop(['Monthly average obs','July 2022 actual'], axis = 1)
+        df = df.sort_values('Percent change', ascending= False)
+        df['% change rank'] = np.arange(df.shape[0])+1
+        df.columns = [label+'_'+i for i in df.columns]
+        pred_dfs[label] = df
+
+    merge_df = pd.concat(pred_dfs.values(), axis = 1)
+    merge_df['Monthly average obs'] = avg_obs
+    merge_df['July 2022 Actual'] = actual
+    merge_df.to_excel('output/exhibits/' + title + '/skill ranking comparison full.xlsx')
+    
+    merge_df = merge_df.loc[merge_df['Monthly average obs'] > 100]
+    for l in labels:
+        merge_df = merge_df.sort_values(l+'_Percent change')
+        merge_df[l+'_% change rank'] = np.arange(merge_df.shape[0])+1
+    merge_df.to_excel('output/exhibits/' + title + '/skill ranking comparison over 100 avg obs.xlsx')
+
+

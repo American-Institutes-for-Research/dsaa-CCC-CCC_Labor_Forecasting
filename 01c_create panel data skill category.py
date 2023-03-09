@@ -39,22 +39,29 @@ for label, row in cat_df.iterrows():
 
 for idx, f in enumerate(my_list):
     if idx > -1 and '.csv.gz' in f:
+        with open('working/01c_tracker.txt', 'w') as file:
+            file.write(str(idx))
+            file.close()
+
         print('chunk', idx, 'of', len(my_list), '-', f)
+        with open('working/01c_tracker.txt', 'w') as file:
+            file.write(str(idx))
+            file.close()
         df = pd.read_csv('data/us_postings/' + f)
 
-        df['POSTED'] = pd.to_datetime(df.EXPIRED).dt.date
+        df['POSTED'] = pd.to_datetime(df.POSTED).dt.date
         df = df.loc[df.POSTED.isna() == False]
         df['POSTED_MONTH'] = pd.to_datetime(df.POSTED).dt.month
-        df['POSTED_MONTH'] = df['POSTED_MONTH'].astype('int')
+        df['POSTED_MONTH'] = df['POSTED_MONTH'].astype('int').round(0)
         df['POSTED_YEAR'] = pd.to_datetime(df.POSTED).dt.year
-        df['POSTED_YEAR'] = df['POSTED_YEAR'].astype('int')
+        df['POSTED_YEAR'] = df['POSTED_YEAR'].astype('int').round(0)
         df['EXPIRED'] = pd.to_datetime(df.EXPIRED).dt.date
-        df['EXPIRED_MONTH'] = pd.to_datetime(df.EXPIRED).dt.month
-        df['EXPIRED_YEAR'] = pd.to_datetime(df.EXPIRED).dt.year
+        df['EXPIRED_MONTH'] = pd.to_datetime(df.EXPIRED).dt.month.fillna(99)
+        df['EXPIRED_YEAR'] = pd.to_datetime(df.EXPIRED).dt.year.fillna(9999)
         df.loc[df.EXPIRED_MONTH.isna() == False, 'EXPIRED_MONTH'] = df.loc[
-            df.EXPIRED_MONTH.isna() == False, 'EXPIRED_MONTH'].astype('int')
+            df.EXPIRED_MONTH.isna() == False, 'EXPIRED_MONTH'].astype('int').round(0)
         df.loc[df.EXPIRED_YEAR.isna() == False, 'EXPIRED_YEAR'] = df.loc[
-            df.EXPIRED_YEAR.isna() == False, 'EXPIRED_YEAR'].astype('int')
+            df.EXPIRED_YEAR.isna() == False, 'EXPIRED_YEAR'].astype('int').round(0)
 
         # establish range of dates to be analyzed
         min_date = datetime.date(2018, 1, 1)
@@ -71,8 +78,7 @@ for idx, f in enumerate(my_list):
         skilldf['POSTED_YYYYMM'] = skilldf.POSTED_YEAR.astype('str') + skilldf.POSTED_MONTH.astype('str').str.zfill(2)
         skilldf['POSTED_YYYYMM'] = skilldf['POSTED_YYYYMM'].astype('int')
         skilldf['EXPIRED_YYYYMM'] = skilldf.EXPIRED_YEAR.astype("str") + skilldf.EXPIRED_MONTH.astype('str').str.zfill(2)
-        skilldf.loc[skilldf.EXPIRED_YYYYMM == 'nannan', 'EXPIRED_YYYYMM'] = '999999'
-        skilldf['EXPIRED_YYYYMM'] = skilldf['EXPIRED_YYYYMM'].astype('int')
+        skilldf['EXPIRED_YYYYMM'] = skilldf['EXPIRED_YYYYMM'].astype('int').round(0)
 
         # for each category
         for n, c in enumerate(cats):
@@ -101,9 +107,9 @@ for idx, f in enumerate(my_list):
             dates = [int(str(y) + str(m).zfill(2)) for y in range(2018, 2023) for m in range(1, 13)]
             for yyyymm in dates:
                 # ...filter to only the postings from that month
-                filt_df = county_skilldf.loc[(county_skilldf.POSTED_YYYYMM >= yyyymm) &
+                filt_df = county_skilldf.loc[(county_skilldf.POSTED_YYYYMM <= yyyymm) &
                                       ((county_skilldf.EXPIRED_YYYYMM.isna()) |
-                                       (county_skilldf.EXPIRED_YYYYMM <= yyyymm))]
+                                       (county_skilldf.EXPIRED_YYYYMM >= yyyymm))]
                 str_ym = str(yyyymm)
                 y = int(str_ym[0:4])
                 m = int(str_ym[4:6])
