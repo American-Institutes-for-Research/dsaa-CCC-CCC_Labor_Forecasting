@@ -1,15 +1,19 @@
 import pandas as pd
 from darts.models.forecasting.linear_regression_model import LinearRegressionModel
+from darts.models.forecasting.arima import ARIMA
 from darts.models import TransformerModel
 from darts import TimeSeries
 from darts.utils.likelihood_models import QuantileRegression
-from darts.models.forecasting.xgboost import XGBModel
+#from darts.models.forecasting.xgboost import XGBModel
+from darts.models.forecasting.prophet_model import Prophet
 import matplotlib.pyplot as plt
 from darts.models import NBEATSModel
+import cmdstanpy
+cmdstanpy.install_cmdstan(compiler=True)
 
-df = pd.read_excel('data/dummy data.xlsx')
+#df = pd.read_excel('data/dummy data.xlsx')
 #df = pd.read_excel('data/dummy data nonlinear.xlsx')
-#df = pd.read_excel('data/dummy data nonlinear2.xlsx')
+df = pd.read_excel('data/dummy data nonlinear2.xlsx')
 df = df.set_index(pd.to_datetime(df['dates']))
 y = TimeSeries.from_series(df['y'])
 train = y[:-36]
@@ -24,19 +28,31 @@ model = LinearRegressionModel(
     output_chunk_length=36
 )
 model.fit(train)
-preds = model.predict(n=36, series=test)
+preds = model.predict(n=36, series=train)
+# preds_alt = model.predict(n=36, series=test)
+# preds_alt2 = model.predict(n=36)
+# print(preds == preds_alt2) # prints True
 
-model2 = XGBModel(
-    lags=24,
-    output_chunk_length=36
-)
+#model2 = Prophet()
+#model2.fit(train)
+#preds2 = model.predict(n=36, series = train)
 
-model2.fit(train)
-preds2 = model2.predict(n=36, series=test)
-result_df = pd.concat([train.pd_series(),test.pd_series(), preds.pd_series(), preds2.pd_series()], axis=1)
-result_df.columns = ['actual train','actual test','linear','XGB']
+result_df = pd.concat([train.pd_series(),test.pd_series(), preds.pd_series()], axis=1)
+result_df.columns = ['actual train','actual test','linear']
 result_df.plot()
 plt.show()
+
+# model2 = XGBModel(
+#     lags=24,
+#     output_chunk_length=36
+# )
+#
+# model2.fit(train)
+# preds2 = model2.predict(n=36, series=test)
+# result_df = pd.concat([train.pd_series(),test.pd_series(), preds.pd_series(), preds_alt.pd_ser preds2.pd_series()], axis=1)
+# result_df.columns = ['actual train','actual test','linear','XGB']
+# result_df.plot()
+# plt.show()
 # EPOCHS=200
 # N_SAMPLES = 100
 # DIM_FF = 128

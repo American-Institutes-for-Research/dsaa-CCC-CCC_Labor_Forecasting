@@ -5,8 +5,8 @@ from sklearn.neural_network import MLPRegressor
 from skforecast.model_selection import grid_search_forecaster
 
 #df = pd.read_excel('data/dummy data.xlsx')
-df = pd.read_excel('data/dummy data nonlinear.xlsx')
-#df = pd.read_excel('data/dummy data nonlinear2.xlsx')
+#df = pd.read_excel('data/dummy data nonlinear.xlsx')
+df = pd.read_excel('data/dummy data nonlinear2.xlsx')
 df = df.set_index(pd.to_datetime(df['dates']))
 y = df['y']
 train = y.iloc[:-36]

@@ -483,12 +483,29 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
     merge_df = pd.concat(pred_dfs.values(), axis = 1)
     merge_df['Monthly average obs'] = avg_obs
     merge_df['July 2022 Actual'] = actual
+
+    # add change from July 2021 to July 2022 for comparison
+    merge_df['Aug 2018 Actual'] = act_df.loc[pd.to_datetime('2018-08-01')]
+    merge_df['18-22 Actual_Percent change'] = ((merge_df['July 2022 Actual'] - merge_df['Aug 2018 Actual']) / merge_df['Aug 2018 Actual']) * 100
+    merge_df = merge_df.sort_values('18-22 Actual_Percent change', ascending=False)
+    merge_df['18-22 Actual_% change rank'] = np.arange(merge_df.shape[0]) + 1
+
+    # reorder some vars for readibility
+    merge_df = merge_df[
+        [i for i in merge_df.columns if '% change rank' in i] +
+        [i for i in merge_df.columns if 'Percent change' in i] +
+        [i for i in merge_df.columns if 'July 2024 predicted' in i] +
+        ['Aug 2018 Actual','July 2022 Actual', 'Monthly average obs']
+    ]
+
     merge_df.to_excel('output/exhibits/' + title + '/skill ranking comparison full.xlsx')
     
-    merge_df = merge_df.loc[merge_df['Monthly average obs'] > 100]
+    merge_df = merge_df.loc[merge_df['Monthly average obs'] > 1000]
+    labels.append('18-22 Actual')
     for l in labels:
-        merge_df = merge_df.sort_values(l+'_Percent change')
+        merge_df = merge_df.sort_values(l+'_Percent change', ascending = False)
         merge_df[l+'_% change rank'] = np.arange(merge_df.shape[0])+1
-    merge_df.to_excel('output/exhibits/' + title + '/skill ranking comparison over 100 avg obs.xlsx')
+    merge_df.to_excel('output/exhibits/' + title + '/skill ranking comparison over 1000 avg obs.xlsx')
 
+    print(merge_df.iloc[:,:4].corr())
 

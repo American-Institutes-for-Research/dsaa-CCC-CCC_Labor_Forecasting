@@ -34,9 +34,10 @@ from datetime import datetime
 from utils import predQ, adf_test, invert_transformation, visualize_predictions, results_analysis
 
 def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
-                    ,ENCODE = 4, DECODE = 4 , BATCH = 32, result_log = None, pred_df = None, start_val= 0,
+                    ,ENCODE = 4, DECODE = 4 , BATCH = 32, SPLIT=.9, result_log = None, pred_df = None, start_val= 0,
                          input_len_used = 12, period_past_data = None, targets_sample = None, min_month_avg = 50, min_tot_inc = 50
-                         , ccc_taught_only = True, differenced = False, hierarchy_lvl = 'skill',pred_length = 24, run_name = '',
+                         , ccc_taught_only = True, differenced = False, hierarchy_lvl = 'skill',
+                         output_chunk_len = None, run_name = '',
                          analyze_results = True, viz_sample=None):
     '''
     params:
@@ -47,6 +48,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         ENCODE - encoder layers
         DECODE - decoder layers
         BATCH - batch size
+        SPLIT - Train/test split %
         result_log - previous result log data frame
         pred_df - previous prediction results dataframe
         start_val - skill number to start at for interrupted runs
@@ -79,7 +81,6 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
     # default quantiles for QuantileRegression
     QUANTILES = [0.01, 0.1, 0.2, 0.5, 0.8, 0.9, 0.99]
 
-    SPLIT = 0.9         # train/test %
 
     FIGSIZE = (9, 6)
 
@@ -284,12 +285,13 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
 
 
         count = 0
-        output_chunk_len = len(covF_ttrain) - input_len_used
-        max_predict_len = output_chunk_len
-        ass_msg = 'predictions being made too far in the future for training data, using ' + \
-                  'forecasted results as training data for second model. Max pred_length is ' \
-                  + str(max_predict_len) + ' months but ' + str(pred_length) + ' months was requested'
-        assert pred_length <= max_predict_len, ass_msg
+        if output_chunk_len is None:
+            output_chunk_len = len(covF_ttrain) - input_len_used
+        # max_predict_len = output_chunk_len
+        # ass_msg = 'predictions being made too far in the future for training data, using ' + \
+        #           'forecasted results as training data for second model. Max pred_length is ' \
+        #           + str(max_predict_len) + ' months but ' + str(pred_length) + ' months was requested'
+        # assert pred_length <= max_predict_len, ass_msg
         while True:
             try:
                 model = TransformerModel(
@@ -329,21 +331,18 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
                 else:
                     raise('too many attempts at model training')
 
-
-
-        ts_tpred_long = model.predict(n=pred_length,
+        # mark the test set for evaluation
+        ts_tpred_long = model.predict(n=output_chunk_len,
                                     series = ts_ttrain,
-                                    past_covariates = covF_ttrain,
+                                    past_covariates = covF_t,
                                     num_samples=N_SAMPLES,
                                     n_jobs=N_JOBS,
                                     verbose=True)
         print('completed predictions')
-        # mark the test set for evaluation
-        ts_tpred = ts_tpred_long[:len(ts_test)]
 
         # take the rest of the predictions and transform them back into a dataframe
         ts_tfut = ts_tpred_long
-
+        ts_tpred = ts_tpred_long[:len(ts_ttest)]
         # remove the scaler transform
         ts_tfut = scalerP.inverse_transform(ts_tfut)
 

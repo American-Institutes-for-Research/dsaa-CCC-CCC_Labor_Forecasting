@@ -28,7 +28,7 @@ county_names = ['Cook, IL', 'DuPage, IL', 'Lake, IL', 'Will, IL', 'Kane, IL',
 my_list = [i for i in my_list if '.csv.gz' in i]
 
 for i, f in enumerate(my_list):
-    if i > -1 and '.csv.gz' in f:
+    if i > 255 and '.csv.gz' in f:
         print('chunk', i, 'of', len(my_list), '-', f)
         with open('working/01a_tracker.txt', 'w') as file:
             file.write(str(i))
