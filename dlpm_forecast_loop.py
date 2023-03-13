@@ -35,6 +35,8 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
         start_val - skill number to start at for interrupted runs
         test_tvalues - number of time steps to put in test data set
         input_len_used - how many months prior to train on
+        output_chunk_length - Number of time steps predicted at once by the internal regression model.
+        cand_features_num - number of feature to select
         targets_sample - length of subset of targets to train on; used for shortening runtimes of tests
         min_month_avg - minimum monthly average job postings for skill to be forecasted for
         min_tot_inc - minimum total increase between first and last observed month for skill to be forecasted for

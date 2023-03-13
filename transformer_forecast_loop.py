@@ -68,10 +68,10 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
     run_name = run_name + ' lvl ' + hierarchy_lvl
     date_run = datetime.now().strftime('%H_%M_%d_%m_%Y')
     FEAT = 32           # d_model = number of expected features in the inputs, up to 512
-
-    ACTF = "relu"       # activation function, relu (default) or gelu
+    ACTF = "relu"
+    LEARN = 1e-3  # activation function, relu (default) or gelu
     SCHLEARN = None     # a PyTorch learning rate scheduler; None = constant rate
-    LEARN = 1e-3        # learning rate
+          # learning rate
     VALWAIT = 1         # epochs to wait before evaluating the loss on the test/validation set
     DROPOUT = 0.1       # dropout rate
 
