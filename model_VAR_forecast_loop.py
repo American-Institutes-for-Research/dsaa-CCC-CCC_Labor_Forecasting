@@ -1,6 +1,6 @@
 '''
 Luke Patterson
-VAR_forecast_loop.py
+model_VAR_forecast_loop.py
 
 Purpose: define function to run VAR model on each skill, generate forecasts, and log results
 Input:

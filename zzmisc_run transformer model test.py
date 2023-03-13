@@ -1,4 +1,4 @@
-from transformer_forecast_loop import run_transformer_loop, prepare_data
+from model_transformer_forecast_loop import run_transformer_loop, prepare_data
 import pandas as pd
 
 run_transformer_loop(targets_sample=10, HEADS=800)

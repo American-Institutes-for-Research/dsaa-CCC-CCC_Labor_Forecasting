@@ -6,7 +6,7 @@ Purpose: run ML transformer forecasting model with a variety of parameters
 
 '''
 
-from transformer_forecast_loop import run_transformer_loop
+from model_transformer_forecast_loop import run_transformer_loop
 
 run_transformer_loop(hierarchy_lvl='category', ccc_taught_only=False, run_name='heavy compute',
                      EPOCHS=500,DIM_FF=2048, ENCODE=32, DECODE=32, SPLIT= .75)

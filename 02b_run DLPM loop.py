@@ -5,7 +5,7 @@ Luke Patterson
 Purpose: run dynamic linear panel forecasting model with a variety of parameters
 
 '''
-from dlpm_forecast_loop import run_DLPM_loop
+from model_dlpm_forecast_loop import run_DLPM_loop
 
 # run_DLPM_loop(run_name='DLPM initial run')
 # run_DLPM_loop(run_name='DLPM 3 month input',input_len_used=3, hierarchy_lvl='category')

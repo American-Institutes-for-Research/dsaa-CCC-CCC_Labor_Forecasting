@@ -1,6 +1,6 @@
 '''
 Luke Patterson
-skforecast_forecast_loop.py
+model_skforecast_forecast_loop.py
 
 Purpose: define function to run Multilayer perceptron  model on each skill, generate forecasts, and log results
 Input:

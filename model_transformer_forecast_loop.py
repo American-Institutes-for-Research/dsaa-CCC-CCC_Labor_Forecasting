@@ -1,6 +1,6 @@
 '''
 Luke Patterson
-transformer_forecast_loop.py
+model_transformer_forecast_loop.py
 
 Purpose: define function to run ML transformer model on each skill, generate forecasts, and log results
 Input:
