@@ -19,7 +19,7 @@ from statsmodels.tsa.stattools import grangercausalitytests
 import statsmodels
 import matplotlib.pyplot as plt
 import shutil
-
+import itertools
 
 def grangers_causation_matrix(data, variables, target, test='ssr_chi2test', verbose=False):
     """Check Granger Causality of all possible combinations of the Time series.
@@ -121,6 +121,7 @@ def invert_transformation(df_train, df_forecast, diffs_made):
     :param diffs_made: number of differences taken
     :return: transformed df_forecast with reverted differencing
     '''
+
     df_fc = df_forecast.copy()
     columns = df_train.columns
     for col in columns:
@@ -136,6 +137,25 @@ def invert_transformation(df_train, df_forecast, diffs_made):
         df_fc[str(col) + '_forecast'] = diff_col
     return df_fc
 
+def invert_transformation_series(df_train, forecast_series, diffs_made):
+    '''
+       Revert back the differencing to get the forecast to original scale for a series.
+       :param df_train: DataFrame of training data
+       :param df_forecast: Series of forecast made
+       :param diffs_made: number of differences taken
+       :return: transformed series forecast with reverted differencing
+       '''
+    diffs_made_temp = diffs_made
+    result = forecast_series.copy()
+    col = forecast_series.name
+    while diffs_made_temp >= 0:
+        # Roll back each level of diff
+        init_val = df_train[col].iloc[-1]
+        for i in range(-1, (diffs_made_temp * -1) - 1, -1):
+            init_val -= df_train[col].iloc[i]
+        result = init_val + result.cumsum()
+        diffs_made_temp -= 1
+    return result
 
 def predQ(ts_t, q, scalerP, ts_test, quantile=True):
     '''
@@ -183,18 +203,18 @@ def results_analysis(fcast_filename, create_vizs=False, panel_data = False):
         df = agg_panel_data(df)
 
     if 'lvl subcategory' in fcast_filename:
-        countdf = pd.read_csv('data/wrong counts/test monthly counts season-adj subcategory.csv', index_col=0)
-        raw_df = pd.read_csv("data/wrong counts/test monthly counts categories.csv", index_col=0)
+        countdf = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+        raw_df = pd.read_csv("data/test monthly counts categories.csv", index_col=0)
         raw_df = raw_df[[i for i in raw_df.columns if 'Skill cat:' not in i]]
 
     elif 'lvl category' in fcast_filename:
-        countdf = pd.read_csv('data/wrong counts/test monthly counts season-adj category.csv', index_col=0)
-        raw_df = pd.read_csv("data/wrong counts/test monthly counts categories.csv", index_col=0)
+        countdf = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+        raw_df = pd.read_csv("data/test monthly counts categories.csv", index_col=0)
         raw_df = raw_df[[i for i in raw_df.columns if 'Skill subcat:' not in i]]
 
     else:
-        countdf = pd.read_csv('data/wrong counts/test monthly counts season-adj skill.csv', index_col=0)
-        raw_df = pd.read_csv("data/wrong counts/test monthly counts.csv", index_col=0)
+        countdf = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
+        raw_df = pd.read_csv("data/test monthly counts.csv", index_col=0)
 
     raw_df = raw_df.fillna(method='ffill')
     raw_df = raw_df.iloc[7:55, :]
@@ -245,7 +265,7 @@ def forecast_graph(preds, actual, col, label, folder):
     :return:
     None
     '''
-
+    plt.clf()
     for key, pred in zip(preds.keys(), preds.values()):
         pred = pred[col]
         pred.name = key
@@ -294,11 +314,11 @@ def visualize_predictions(fcast_filename=None, sample=10, topfiles=None, panel_d
         pred_df = clean_data_for_graphs(pred_df, run_name, panel_data=panel_data)
 
         if 'lvl subcategory' in run_name:
-            act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj subcategory.csv', index_col=0)
+            act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
         elif 'lvl category' in run_name:
-            act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj category.csv', index_col=0)
+            act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
         else:
-            act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj skill.csv', index_col=0)
+            act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
 
         act_df.index = pd.to_datetime(act_df.index)
 
@@ -316,7 +336,7 @@ def visualize_predictions(fcast_filename=None, sample=10, topfiles=None, panel_d
 
         for i in pred_cols:
             if i != 'Postings count':
-                skill_name = i.replace('Skill: ', '').replace('Skill cat:', '').replace('Skill subcat:', '')
+                skill_name = i.replace('Skill: ', '').replace('Skill cat: ', '').replace('Skill subcat: ', '')
                 forecast_graph({model_name: pred_df}, act_df, i, skill_name + ' graph', 'output/exhibits/' + run_name)
 
 
@@ -364,7 +384,7 @@ def agg_panel_data(df):
     # counties are close enough in size that it is not a big difference.
     count_df.loc['Lake'] = count_df.loc['Lake'] / 2
 
-    # cut to only county name
+    # cut eto only county name
     df.index = df.index.map(lambda idx: idx.split(",")[0])
 
     df = df.merge(count_df, left_index=True, right_index=True)
@@ -385,20 +405,20 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
     Produce comparisons of two or more sets of results
     :params:
     runnames: list of filenames of the runs of results to use for comparisons
-    labels: list of labels to use as shorthand for runnames in charts. Should be same length as runnames. Should take values: 'panel', "VAR", 'transformer'
+    labels: list of labels to use as shorthand for runnames in charts. Should be same length as runnames. Should take values: 'panel', "VAR", 'transformer','ProphetAR','ARIMA'
     title: string, title to give the comparison
     panel_indicators: list of booleans indicating whether run files are panels or not
     :return:
     None
     '''
-    valid_labels = ['panel', "VAR", 'transformer']
+    valid_labels = ['panel', "VAR", 'transformer','ProphetAR','ARIMA']
     assert all([i in valid_labels for i in labels]),'all labels must be one of panel, VAR, transformer'
     if hierarchy_lvl == 'subcategory':
-        act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj subcategory.csv', index_col=0)
+        act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
     elif hierarchy_lvl == 'category':
-        act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj category.csv', index_col=0)
+        act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
     else:
-        act_df = pd.read_csv('data/wrong counts/test monthly counts season-adj skill.csv', index_col=0)
+        act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
 
     act_df.index = pd.to_datetime(act_df.index)
 
@@ -416,7 +436,7 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
             cols = dfs[l].columns
         else:
             cols = [i for i in cols if i in dfs[l].columns.values]
-
+    print('loaded data')
     # produce visualizations with all runs on the same diagram
     if sample == None:
         cols = cols
@@ -431,7 +451,7 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
     for c in cols:
         skill_name = c.replace('Skill: ', '').replace('Skill cat:', '').replace('Skill subcat:', '')
         forecast_graph(dfs, act_df, c, skill_name + ' graph', 'output/exhibits/' + title)
-
+    print('finished graphing comparison forecasts')
     # compare performance metrics
     # this dataframe keeps track of mean overall metrics by model, and then appends the individual model metrics at the end
     perf_df = pd.DataFrame(index=['mean'])
@@ -463,7 +483,7 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
 
 
     perf_df.to_excel('output/exhibits/'+title+'/performance comparison.xlsx')
-
+    print('completed performance metric comparison')
     # output statistics on agreement of models in terms of skill demand rankings
     pred_dfs = {}
     # Load each data frame of predicted changes and rename columns so they can be merged together
@@ -507,5 +527,167 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
         merge_df[l+'_% change rank'] = np.arange(merge_df.shape[0])+1
     merge_df.to_excel('output/exhibits/' + title + '/skill ranking comparison over 1000 avg obs.xlsx')
 
-    print(merge_df.iloc[:,:4].corr())
+    merge_df.corr().to_csv('output/exhibits/' + title + '/model skill ranking correlation.csv')
 
+
+def grid_search(params_grid, default_params, loop_func, batch_name, clear = True):
+    '''
+    Perform a grid search over combinations of parameters in param grid to find
+    :param params_grid: dict of lists representing possible parameters to search
+    :param default_params: default params to use in every run
+    :param loop_func: function to loop over
+    :param batch_name: name of batch
+    :param clear: whether to clear folder if it exists
+    :return: None
+    '''
+
+    # remove folder from previous run if present
+    if clear:
+        if os.path.exists('result_logs/batch_'+batch_name):
+            shutil.rmtree('result_logs/batch_'+batch_name)
+        if os.path.exists('output/batch_'+batch_name):
+            shutil.rmtree('output/batch_'+batch_name)
+
+    # create all combinations of params
+    keys, values = zip(*params_grid.items())
+    permutations_dicts = [dict(zip(keys, v)) for v in itertools.product(*values)]
+
+    error_tracker = pd.DataFrame()
+
+    # iterate through all params for the model loop
+    for n, p in enumerate(permutations_dicts):
+        print('iteration', n, 'of', len(permutations_dicts))
+        try:
+            loop_func(run_name = batch_name, batch_name=batch_name, analyze_results = False, **default_params, **p)
+        except Exception as e:
+            print('error with params:', p)
+            print('error message:', e)
+            err_row = pd.Series(p)
+            err_row['error'] = e
+            error_tracker = error_tracker.append(err_row, ignore_index=True)
+            continue
+
+    error_tracker.to_csv('result_logs/batch_'+ batch_name +'/error_tracker.csv')
+
+    logfiles = os.listdir('result_logs/batch_'+batch_name)
+    logfiles = [i for i in logfiles if 'looped' in i and 'model results' in i]
+
+    # loop through all log files and output a sorted list of the model iteration RMSE
+    result_df = pd.DataFrame()
+    for f in logfiles:
+        df = pd.read_csv('result_logs/batch_' + batch_name + '/' + f, index_col=0)
+        row = pd.Series()
+        if 'Normalized RMSE' in df.columns and df.shape[0] > 1:
+            row['filename'] = f
+            row['RMSE'] = df['Normalized RMSE'].mean()
+            for col in params_grid.keys():
+                row[col] = df[col].iloc[0]
+            if 'cand_features_num' in df.columns:
+                row['cand_features_num'] = df['cand_features_num'].iloc[0]
+            result_df = result_df.append(row, ignore_index=True)
+
+    result_df = result_df.sort_values('RMSE')
+    result_df.to_csv('result_logs/batch_'+ batch_name+'/RMSE summary.csv')
+
+def create_ensemble_results(runnames, labels, title, panel_indicators, extreme_change_thresh = 1000, min_monthly_obs = 50, hierarchy_lvl='skill'):
+    '''
+    Produce combined ensemble estimates from two or more sets of results, choosing the lowest RMSE estimate for each skill
+    :params:
+    runnames: list of filenames of the runs of results to use for ensemble
+    labels: list of labels to use as shorthand for runnames in charts. Should be same length as runnames. Should take values: 'panel', "VAR", 'transformer','ProphetAR', 'ARIMA']
+    title: string, title to give the ensemble
+    panel_indicators: list of booleans indicating whether run files are panels or not
+    :return:
+    None
+    '''
+
+    valid_labels = ['panel', "VAR", 'transformer', 'ProphetAR', 'ARIMA']
+    assert all([i in valid_labels for i in labels]), 'all labels must be one of panel, VAR, transformer'
+    if hierarchy_lvl == 'subcategory':
+        act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+    elif hierarchy_lvl == 'category':
+        act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+    else:
+        act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
+
+    act_df.index = pd.to_datetime(act_df.index)
+
+    dfs = {}
+    log_dfs = {}
+    cols = []
+    rmse_compare = pd.DataFrame()
+    for n, l in enumerate(labels):
+        pred_df = pd.read_csv('output/predicted changes/' + runnames[n].replace('predicted job posting shares','predicted changes') + '.csv', index_col=0)
+
+        if panel_indicators[n]:
+            pred_df = pred_df.rename({'Unnamed: 1': 'month'}, axis=1)
+            pred_df = agg_panel_data(pred_df)
+
+        # establish the set of columns that all data sets share
+        if n == 0:
+            cols = pred_df.columns
+        else:
+            cols = [i for i in cols if i in pred_df.columns.values]
+
+        dfs[runnames[n]] = pred_df
+
+        log_name = runnames[n].replace('predicted job posting shares', 'looped ' + labels[n] + ' model results')
+        log_df = pd.read_csv('result_logs/' + log_name + '.csv', index_col=0)
+        # some of the older logs need to be inverted
+        if 'MAPE' not in log_df.columns:
+            log_df = log_df.T
+        log_df['target'] = log_df.target.str.replace('Skill: ', '')
+        log_df = log_df.set_index('target')
+        # if it's panel, metrics are recorded at the target level, so we can drop duplicates from counties
+        if panel_indicators[n]:
+            log_df = log_df[~log_df.index.duplicated(keep='first')]
+
+        log_df = log_df.rename({'Normalized RMSE':'RMSE model #'+str(runnames[n])}, axis = 1)
+        if n == 0:
+            rmse_compare = log_df[['RMSE model #'+str(runnames[n])]]
+        else:
+            rmse_compare = rmse_compare.merge(log_df[['RMSE model #'+str(runnames[n])]], left_index=True, right_index=True, how='outer')
+        log_dfs[runnames[n]] = log_df
+
+
+    # sometimes models could score strong RMSE, but predict  changes far out of bounds of reality (as in > 1 or <0 job posting share).
+    # also removing extreme change threshold
+    # here we will remove these model's estimates from consideration for those skills
+
+    for model, df in zip(dfs.keys(), dfs.values()):
+        err_df = df.loc[(df['July 2024 predicted'] > 1) | (df['July 2024 predicted'] < 0) | (df['Percent change'].abs() > extreme_change_thresh)]
+        print('for hierarchy level:',hierarchy_lvl, 'and model:',model)
+        print(err_df.shape[0], ' predictions were too extreme or out of the [0,1] domain, and were removed from model candidates')
+
+        for skill in err_df.index:
+            rmse_compare.loc[skill, 'RMSE model #'+model] = np.nan
+
+
+    # drop rows for which no model makes a valid prediction
+    rmse_compare = rmse_compare.dropna(how='all')
+
+    best_models = rmse_compare.idxmin(axis=1).dropna()
+    if hierarchy_lvl == 'skill':
+        best_models.index = [i.replace('Skill: ', '') for i in best_models.index]
+
+    ensemble_df = pd.DataFrame()
+    missing_count = 0
+    for skill,model in best_models.iteritems():
+        model_label = model.replace('RMSE model #','')
+
+        # handful of skills are in the log dfs but not in the results dfs due to model  failures:
+        if skill in dfs[model_label].index:
+            row = dfs[model_label].loc[skill,:]
+            row['model'] = model_label
+            row['Normalized RMSE'] = rmse_compare.loc[skill,model]
+            ensemble_df = pd.concat([ensemble_df, row], axis = 1)
+        else:
+            missing_count += 1
+    print(ensemble_df.shape[1],'skills added to ensemble df.', missing_count, 'skills dropped due to lack of predictions made.')
+    ensemble_df = ensemble_df.T
+
+    # remove predictions made on niche skills
+    ensemble_df = ensemble_df.loc[ensemble_df['Monthly average obs'] >= min_monthly_obs]
+
+    ensemble_df.to_csv('output/predicted changes/ensemble results '+title+'.csv')
+    pass

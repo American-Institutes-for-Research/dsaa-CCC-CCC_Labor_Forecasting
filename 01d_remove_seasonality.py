@@ -33,12 +33,12 @@ from matplotlib import pyplot
 from dateutil.relativedelta import relativedelta
 
 # check for seasonality.
-def seasonality_loop(df, name, county = None):
-    df = df.rename({'Unnamed: 0':'date'}, axis=1)
-    df['month']= df['date'].str[5:7].astype('int')
+def prepare_data(df, county):
+    df = df.rename({'Unnamed: 0': 'date'}, axis=1)
+    df['month'] = df['date'].str[5:7].astype('int')
     df = df.fillna(method='ffill')
     # 7-55 filter is to remove months with 0 obs
-    df = df.iloc[7:55,:].reset_index(drop=True)
+    df = df.iloc[7:55, :].reset_index(drop=True)
 
     # create times series index
     date_idx = pd.to_datetime(df['date'])
@@ -48,16 +48,19 @@ def seasonality_loop(df, name, county = None):
 
     # export monthly average sample size
     if county is None:
-        df.mean().to_csv('working/average monthly observations by counts '+name+'.csv')
-
+        df.mean().to_csv('working/average monthly observations by counts ' + name + '.csv')
 
     job_counts = df['Postings count'].copy()
     raw_df = df.copy()
     df = df.divide(job_counts, axis=0)
     df['Postings count'] = job_counts
     df = df.set_index(pd.DatetimeIndex(date_idx))
+    return df
 
-    targets = raw_df.columns
+def seasonality_loop(df, name, county = None):
+
+    targets = df.columns
+    df = prepare_data(df, county)
 
     # todo: check sensitivity for not doing this expand this series
     # expand series out 6 months in either direction with same value so seasonality can be removed

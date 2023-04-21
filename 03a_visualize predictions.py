@@ -22,5 +22,6 @@ from utils import visualize_predictions
 # visualize_predictions('predicted job posting shares 13_03_12_01_2023 no filtered skills VAR v2 - Copy')
 # visualize_predictions('predicted job posting shares 17_58_12_01_2023 filtered skills VAR no difference')
 #visualize_predictions('predicted job posting shares 15_51_25_01_2023 VAR no differencing lvl category', sample=None)
-visualize_predictions('predicted job posting shares 11_19_08_03_2023 DLPM 6 month input 12 output chunk len lvl category', sample=None, panel_data= True)
-#visualize_predictions('predicted job posting shares 12_20_06_03_2023 Transformer 3.5 yr out lvl category', sample= None)
+#visualize_predictions('predicted job posting shares 11_19_08_03_2023 DLPM 6 month input 12 output chunk len lvl category', sample=None, panel_data= True)
+visualize_predictions('predicted job posting shares 17_01_28_03_02_2023 VAR grid search optimal lvl subcategory', sample= None)
+visualize_predictions('predicted job posting shares 16_59_28_03_22_2023 VAR grid search optimal lvl category', sample= None)

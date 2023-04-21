@@ -18,6 +18,7 @@ Output:
 
 import pandas as pd
 import numpy as np
+import os
 import sys
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -28,8 +29,8 @@ from utils import grangers_causation_matrix, cointegration_test, adf_test, forec
 
 def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12, test_tvalues = 5,
                          input_len_used = 12, targets_sample = None, min_month_avg = 50, min_tot_inc = 50, cand_features_num=100
-                         , ccc_taught_only = True, max_diffs=2, hierarchy_lvl = 'skill', run_name = '',
-                         analyze_results = True, viz_sample=None):
+                         , ccc_taught_only = True, max_diffs=2, hierarchy_lvl = 'skill', run_name = '', batch_name = None, trend= 'c',
+                         ic = None, analyze_results = True, season_adj = True, viz_sample=None):
     '''
     params:
         result_log - previous result log data frame
@@ -40,9 +41,13 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         min_month_avg - minimum monthly average job postings for skill to be forecasted for
         min_tot_inc - minimum total increase between first and last observed month for skill to be forecasted for
         max_diffs - maximum levels of differences to take when looking for a stationary series.
+        ic - information criterion to use for VAR order selection.
+        trend - trend assumption for VAR fit function.
         hierarchy_lvl - level of EMSI taxonomy to use: skill, subcategory, category
+        batch_name - name of batch the run will belong to
         run_name - name to give run's log/results files.
         analyze_results - whether to run results analysis at the end of the run
+        season_adj - boolean for whether to use seasonally adjusted data or not
         viz_sample - param to pass for results analysis
 
     Function to test run transformer model with various parameters, and understand runtime
@@ -50,14 +55,26 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
     Primarily based off of this post: https://www.machinelearningplus.com/time-series/vector-autoregression-examples-python/
     '''
     run_name = run_name + ' lvl ' + hierarchy_lvl
+    if batch_name is not None:
+        batch_output = 'output/batch_'+batch_name
+        batch_logs = 'result_logs/batch_'+batch_name
+        if not os.path.exists(batch_logs):
+            os.mkdir(batch_logs)
+        if not os.path.exists(batch_output):
+            os.mkdir(batch_output)
+    else:
+        batch_output = 'output/'
+        batch_logs = 'result_logs/'
 
-    date_run = datetime.datetime.now().strftime('%H_%M_%d_%m_%Y')
+    date_run = datetime.datetime.now().strftime('%H_%M_%S_%d_%m_%Y')
     if result_log is None:
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill', 'subcategory', 'category'])
-    df = pd.read_csv('data/wrong counts/test monthly counts season-adj ' + hierarchy_lvl + '.csv', index_col=0)
-
+    if season_adj:
+        df = pd.read_csv('data/test monthly counts season-adj ' + hierarchy_lvl + '.csv', index_col=0)
+    else:
+        df = pd.read_csv('data/test monthly counts non-season-adj ' + hierarchy_lvl + '.csv', index_col=0)
     #--------------------
     # Feature Selection
     #-------------------
@@ -65,7 +82,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
     if hierarchy_lvl == 'skill':
         # look only for those skills with mean 50 postings, or whose postings count have increased by 50 from the first to last month monitored
 
-        raw_df = pd.read_csv('data/wrong counts/test monthly counts.csv')
+        raw_df = pd.read_csv('data/test monthly counts.csv')
         raw_df = raw_df.rename({'Unnamed: 0': 'date'}, axis=1)
         raw_df = raw_df.fillna(method='ffill')
         # 7-55 filter is to remove months with 0 obs
@@ -152,7 +169,8 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
 
             # figure out what features to use - try just top cand_features_num most correlated features that are not the target
             features = features_main[t].abs().sort_values(ascending=False).dropna()
-
+            if cand_features_num > len(features):
+                cand_features_num = len(features)
 
             features = features.drop(t).iloc[:cand_features_num+1]
             features = list(features.keys())
@@ -263,7 +281,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
 
         fit_results = pd.Series()
         for i in range(1,max_lags+1):
-            model_cand = model.fit(i)
+            model_cand = model.fit(i, trend=trend, ic=ic)
             try:
                 fit_results.loc[i] = model_cand.aic
             except np.linalg.LinAlgError:
@@ -273,7 +291,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
             p_order = fit_results.idxmax()
         else:
             p_order = max_lags
-        model_fitted = model.fit(p_order)
+        model_fitted = model.fit(p_order, trend=trend, ic=ic)
 
         # print model summary to log file
         old_stdout = sys.stdout
@@ -305,7 +323,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
 
         # create forecasted date index; our forecast starts at the first time step of the test data set and extends
         # 43 - input_len_used time steps forward
-        min_date = datetime.date(2022, 3, 1)
+        min_date = datetime.date(2022, 8, 1) - relativedelta(months=-test_tvalues)
         max_date = min_date + relativedelta(months=+42-input_len_used)
         dates = pd.period_range(min_date, max_date, freq='M')
         date_idx = pd.DatetimeIndex(dates.to_timestamp())
@@ -334,7 +352,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         else:
             pred_df.index = pred_row.index
         pred_df = pd.concat([pred_df, pred_row], axis=1)
-        pred_df.to_csv('output/predicted job posting shares ' +
+        pred_df.to_csv(batch_output+'/predicted job posting shares ' +
                        date_run + ' ' + run_name +
                        '.csv')
 
@@ -364,12 +382,16 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         result_log['ccc_taught_only'] = ccc_taught_only
         result_log['input_len_used'] = input_len_used
         result_log['differences_made'] = diffs_made
+        result_log['trend'] = trend
+        result_log['cand_features_num'] = cand_features_num
+        result_log['max_lags'] = max_lags
+        result_log['ic'] = ic
 
-        pd.DataFrame(result_log).to_csv('result_logs/looped VAR model results '+
+        pd.DataFrame(result_log).to_csv(batch_logs+'/looped VAR model results '+
                                           date_run+' '+run_name +
                                           '.csv')
 
-    target_tracker.to_csv('result_logs/looped VAR model variable training success tracker ' +
+    target_tracker.to_csv(batch_logs+'/looped VAR model variable training success tracker ' +
                                       date_run + ' ' + run_name +
                                       '.csv')
 

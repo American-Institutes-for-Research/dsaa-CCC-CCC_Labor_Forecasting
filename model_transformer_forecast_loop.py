@@ -36,7 +36,7 @@ from utils import predQ, adf_test, invert_transformation, visualize_predictions,
 def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
                     ,ENCODE = 4, DECODE = 4 , BATCH = 32, SPLIT=.9, result_log = None, pred_df = None, start_val= 0,
                          input_len_used = 12, period_past_data = None, targets_sample = None, min_month_avg = 50, min_tot_inc = 50
-                         , ccc_taught_only = True, differenced = False, hierarchy_lvl = 'skill',
+                         , ccc_taught_only = True, differenced = False, hierarchy_lvl = 'skill', pred_len = None,
                          output_chunk_len = None, run_name = '',
                          analyze_results = True, viz_sample=None):
     '''
@@ -88,7 +88,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill','subcategory', 'category'])
-    df = pd.read_csv('data/wrong counts/test monthly counts season-adj '+hierarchy_lvl+'.csv', index_col=0)
+    df = pd.read_csv('data/test monthly counts season-adj '+hierarchy_lvl+'.csv', index_col=0)
 
     #--------------------
     # Feature Selection
@@ -97,7 +97,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
     if hierarchy_lvl == 'skill':
         # look only for those skills with mean 50 postings, or whose postings count have increased by 50 from the first to last month monitored
 
-        raw_df = pd.read_csv('data/wrong counts/test monthly counts.csv')
+        raw_df = pd.read_csv('data/test monthly counts.csv')
         raw_df = raw_df.rename({'Unnamed: 0': 'date'}, axis=1)
         raw_df = raw_df.fillna(method='ffill')
         # 7-55 filter is to remove months with 0 obs
@@ -168,6 +168,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         pred_df = pd.DataFrame()
     features_main = df.corr()
     orig_df = df.copy()
+
     for n,t in enumerate(targets):
         df = orig_df
         # only forecast skills
@@ -238,26 +239,31 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         ts_covF = TimeSeries.from_dataframe(df_feat, fill_missing_dates=True, freq=None)
 
         # create train and test split
-        ts_train, ts_test = ts_P.split_after(SPLIT)
-        covF_train, covF_test = ts_covF.split_after(SPLIT)
-
         scalerP = Scaler()
-        scalerP.fit_transform(ts_train)
-        ts_ttrain = scalerP.transform(ts_train)
-        ts_ttest = scalerP.transform(ts_test)
+        scalerP.fit(ts_P)
         ts_t = scalerP.transform(ts_P)
+        ts_ttrain, ts_ttest = ts_t.split_after(SPLIT)
+
+
+        # ts_ttrain = scalerP.transform(ts_train)
+        # ts_ttest = scalerP.transform(ts_test)
+        # ts_t = scalerP.transform(ts_P)
 
         # make sure data are of type float
-        ts_t = ts_t.astype(np.float32)
+        ts_P = ts_P.astype(np.float32)
         ts_ttrain = ts_ttrain.astype(np.float32)
         ts_ttest = ts_ttest.astype(np.float32)
 
         # do the same for features
         scalerF = Scaler()
-        scalerF.fit_transform(covF_train)
-        covF_ttrain = scalerF.transform(covF_train)
-        covF_ttest = scalerF.transform(covF_test)
+        scalerF.fit(ts_covF)
         covF_t = scalerF.transform(ts_covF)
+        covF_ttrain, covF_ttest = covF_t.split_after(SPLIT)
+
+        # scalerF.fit_transform(covF_train)
+        # covF_ttrain = scalerF.transform(covF_train)
+        # covF_ttest = scalerF.transform(covF_test)
+        # covF_t = scalerF.transform(ts_covF)
 
 
         # make sure data are of type float
@@ -266,22 +272,22 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         covF_t = covF_t.astype(np.float32)
 
         # add monthly indicators
-        covT = datetime_attribute_timeseries(ts_P.time_index,
-                                                attribute="month",
-                                                one_hot=False)
-
-
-        # train/test split
-        covT_train, covT_test = covT.split_after(SPLIT)
-
-        # rescale the covariates: fitting on the training set
-        scalerT = Scaler()
-        scalerT.fit(covT_train)
-        covT_ttrain = scalerT.transform(covT_train)
-        covT_ttest = scalerT.transform(covT_test)
-        covT_t = scalerT.transform(covT)
-
-        covT_t = covT_t.astype(np.float32)
+        # covT = datetime_attribute_timeseries(ts_P.time_index,
+        #                                         attribute="month",
+        #                                         one_hot=False)
+        #
+        #
+        # # train/test split
+        # covT_train, covT_test = covT.split_after(SPLIT)
+        #
+        # # rescale the covariates: fitting on the training set
+        # scalerT = Scaler()
+        # scalerT.fit(covT_train)
+        # covT_ttrain = scalerT.transform(covT_train)
+        # covT_ttest = scalerT.transform(covT_test)
+        # covT_t = scalerT.transform(covT)
+        #
+        # covT_t = covT_t.astype(np.float32)
 
 
         count = 0
@@ -318,7 +324,9 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
                     force_reset=True
                 )
                 model.fit(ts_ttrain,
+                                val_series = ts_ttest,
                                 past_covariates=covF_ttrain,
+                                val_past_covariates = covF_t,
                                 verbose=True)
                 break
             except (FileNotFoundError, PermissionError, FileExistsError):
@@ -332,7 +340,9 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
                     raise('too many attempts at model training')
 
         # mark the test set for evaluation
-        ts_tpred_long = model.predict(n=output_chunk_len,
+        if pred_len is None:
+            pred_len = output_chunk_len
+        ts_tpred_long = model.predict(n=pred_len,
                                     series = ts_ttrain,
                                     past_covariates = covF_t,
                                     num_samples=N_SAMPLES,
@@ -349,7 +359,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         # convert to dataframe
 
         pred_row = ts_tfut.quantile_df()
-        pred_row = pred_row.iloc[:,0].apply(lambda x: float(x.values))
+        pred_row = pred_row.iloc[:,0] #.apply(lambda x: float(x.values))
         pred_row.name = pred_row.name.replace('_0.5','')
 
         # revert differencing if any differences made
@@ -371,6 +381,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         q50_MAPE = np.inf
         ts_q50 = None
         pd.options.display.float_format = '{:,.2f}'.format
+        ts_test = scalerP.inverse_transform(ts_ttest)
         dfY = pd.DataFrame()
         dfY["Actual"] = TimeSeries.pd_series(ts_test)
 

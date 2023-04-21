@@ -59,7 +59,7 @@ def run_skforecast_loop(result_log = None, pred_df = None, start_val= 0,
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill','subcategory', 'category'])
-    df = pd.read_csv('data/wrong counts/test monthly counts season-adj '+hierarchy_lvl+'.csv', index_col=0)
+    df = pd.read_csv('data/test monthly counts season-adj '+hierarchy_lvl+'.csv', index_col=0)
 
     #--------------------
     # Feature Selection
@@ -68,7 +68,7 @@ def run_skforecast_loop(result_log = None, pred_df = None, start_val= 0,
     if hierarchy_lvl == 'skill':
         # look only for those skills with mean 50 postings, or whose postings count have increased by 50 from the first to last month monitored
 
-        raw_df = pd.read_csv('data/wrong counts/test monthly counts.csv')
+        raw_df = pd.read_csv('data/test monthly counts.csv')
         raw_df = raw_df.rename({'Unnamed: 0': 'date'}, axis=1)
         raw_df = raw_df.fillna(method='ffill')
         # 7-55 filter is to remove months with 0 obs
@@ -193,7 +193,7 @@ def run_skforecast_loop(result_log = None, pred_df = None, start_val= 0,
         y.name = t
         y.index = df.index
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.1, shuffle = False)
         forecaster = ForecasterAutoreg(
             regressor=regressor,
             lags=input_len_used

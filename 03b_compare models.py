@@ -14,21 +14,47 @@ from utils import compare_results
 
 compare_results(
     runnames=[
-        'predicted job posting shares 14_54_06_03_2023 DLPM 1 month input lvl subcategory',
+        # 'predicted job posting shares 14_54_06_03_2023 DLPM 1 month input lvl subcategory',
         'predicted job posting shares 14_33_06_03_2023 VAR no differencing 1 month input 3.5 year output lvl subcategory',
-        'predicted job posting shares 14_50_06_03_2023 Transformer 3.5 yr out lvl subcategory'
+        'predicted job posting shares 16_06_15_03_2023 ARIMA test lvl subcategory',
+        'predicted job posting shares 17_16_14_03_2023 Neuralprophet AR yhat1 test lvl subcategory'
     ],
     labels=[
-        'panel',
+        # 'panel',
         'VAR',
-        'transformer'
+        'ARIMA',
+        'ProphetAR'
     ],
     panel_indicators=[
-        True,
+        # True,
+        False,
         False,
         False
     ],
-    title = 'VAR_DLPM_ML comparison subcat',
+    title = 'VAR_Prophet_ARIMA comparison subcat',
     hierarchy_lvl= 'subcategory',
-    sample = 20
+    #sample = 20
 )
+#
+# compare_results(
+#     runnames=[
+#         'predicted job posting shares 09_21_28_02_2023 DLPM 6 month input lvl category',
+#         'predicted job posting shares 13_22_14_03_2023 VAR no differencing 6 month input corrected data lvl category',
+#         'predicted job posting shares 09_41_09_03_2023 Transformer 6 month input 12 output chunk len lvl category',
+#         'predicted job posting shares 17_02_14_03_2023 Neuralprophet AR yhat1 test lvl category'
+#     ],
+#     labels=[
+#         'panel',
+#         'VAR',
+#         'transformer',
+#         'ProphetAR'
+#     ],
+#     panel_indicators=[
+#         True,
+#         False,
+#         False,
+#         False
+#     ],
+#     title = 'VAR_DLPM_ML_ProphAR comparison cat',
+#     hierarchy_lvl= 'category'
+# )

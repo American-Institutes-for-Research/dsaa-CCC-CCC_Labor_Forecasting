@@ -3,5 +3,8 @@ data/*
 result_logs/*
 darts_logs/*
 __pycache__/*
+output/exhibits/*
+result_logs/batch*
+output/batch*
 data.zip
 *~$*

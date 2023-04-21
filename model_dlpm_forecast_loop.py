@@ -51,7 +51,7 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill', 'subcategory', 'category'])
-    df = pd.read_csv('data/wrong counts/test monthly counts season-adj county ' + hierarchy_lvl + '.csv', index_col=0)
+    df = pd.read_csv('data/test monthly counts season-adj county ' + hierarchy_lvl + '.csv', index_col=0)
     #df = pd.read_csv('data/test monthly counts county panel season-adj.csv', index_col=0)
     #--------------------
     # Feature Selection
@@ -62,7 +62,7 @@ def run_DLPM_loop(result_log = None, pred_df = None, start_val= 0, test_tvalues 
     if hierarchy_lvl == 'skill':
         # look only for those skills with mean 50 postings, or whose postings count have increased by 50 from the first to last month monitored
 
-        raw_df = pd.read_csv('data/wrong counts/test monthly counts.csv')
+        raw_df = pd.read_csv('data/test monthly counts.csv')
         raw_df = raw_df.rename({'Unnamed: 0': 'date'}, axis=1)
         raw_df = raw_df.fillna(method='ffill')
         # 7-55 filter is to remove months with 0 obs
