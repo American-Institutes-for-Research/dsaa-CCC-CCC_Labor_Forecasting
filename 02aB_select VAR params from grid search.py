@@ -27,3 +27,4 @@ for f in logfiles:
 
 result_df = result_df.sort_values('RMSE')
 result_df.to_csv('result_logs/batch_VAR grid search/RMSE summary.csv')
+

@@ -35,7 +35,7 @@ def run_pybats_loop(result_log = None, pred_df = None, start_val= 0, test_split 
                          input_len_used = 4, period_past_data = None, targets_sample = None, min_month_avg = 50, min_tot_inc = 50
                          , ccc_taught_only = True, differenced = False, hierarchy_lvl = 'skill', past_months_data = None,
                          forecast_steps = 36, family = 'normal',prior_length = 12,rho = .9,deltrend=.99, delregn=.99, k = 6,
-                         copula = False, use_model_prior = False,
+                         copula = False, use_model_prior = False, cand_features_num = 100,
                          run_name = '', analyze_results = True, viz_sample = None, batch_name = None):
     '''
     params:
@@ -196,6 +196,9 @@ def run_pybats_loop(result_log = None, pred_df = None, start_val= 0, test_split 
         # filter to only those with at least a moderate correlation of .25
         features = features.loc[features.abs()> .25]
         features = features.drop(t).index
+        if cand_features_num > len(features):
+            cand_features_num = len(features)
+        features = features[:cand_features_num + 1]
 
         # min max scale features
         X = df[features]
@@ -224,9 +227,9 @@ def run_pybats_loop(result_log = None, pred_df = None, start_val= 0, test_split 
         #mod, samples = analysis(
         #   ret = ['model', 'forecast'],
         mod = analysis(
-            Y=y_train[t].values[1:],
-            X=y_train[t].values[:-1],
-            dates = y_train.index[1:],
+            Y=y_train[t].values,
+            X=X_train.values,
+            dates = y_train.index,
             #seasPeriods=[4], seasHarmComponents=[[1, 2]], delseas=.99,
             model_prior = model_prior,
             family=family,  # the family of the distribution to be used
@@ -246,7 +249,7 @@ def run_pybats_loop(result_log = None, pred_df = None, start_val= 0, test_split 
         if copula:
             pred_row = mod.forecast_path_copula(k=forecast_steps)
         else:
-            pred_row = mod.forecast_path(k=forecast_steps, X=y_train.values[:-1])
+            pred_row = mod.forecast_path(k=forecast_steps, X=X_train.values)
         pred_row = pd.Series(pred_row[0])
 
         # make forecast date idx

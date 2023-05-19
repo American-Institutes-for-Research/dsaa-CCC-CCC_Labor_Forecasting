@@ -11,8 +11,14 @@ output:
 '''
 import pandas as pd
 from utils import results_analysis
+import os
 
+for file in os.listdir('output/batch_ARIMA top grid search runs'):
+    results_analysis(file.replace('.csv',''),
+                     fcast_folder='output/batch_ARIMA top grid search runs/')
 
-results_analysis('predicted job posting shares 14_54_06_03_2023 DLPM 1 month input lvl subcategory', panel_data=True)
-#results_analysis('predicted job posting shares 12_20_06_03_2023 Transformer 3.5 yr out lvl category')
+for file in os.listdir('output/batch_VAR top grid search runs cat_subcat'):
+    results_analysis(file.replace('.csv',''),
+                     fcast_folder='output/batch_VAR top grid search runs cat_subcat/')
+
 pass

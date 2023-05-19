@@ -14,7 +14,7 @@ def run_ARIMA_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 1
                          input_len_used = 12, targets_sample = None, min_month_avg = 50, min_tot_inc = 50, cand_features_num=100
                          , ccc_taught_only = True, auto_reg = 3, max_diffs=2, moving_avg = 1, trend = None, use_exog = False,
                          hierarchy_lvl = 'skill', run_name = '', batch_name = None,
-                         analyze_results = True, viz_sample=None):
+                         analyze_results = True, viz_predictions = True, viz_sample=None):
     '''
     params:
         result_log - previous result log data frame
@@ -303,7 +303,10 @@ def run_ARIMA_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 1
 
 
     if analyze_results:
+        print('analyzing results')
+        results_analysis('predicted job posting shares ' + date_run + ' ' + run_name)
+
+    if viz_predictions:
         print('visualizing results')
         visualize_predictions('predicted job posting shares ' + date_run + ' ' + run_name,
                               sample=viz_sample)
-        results_analysis('predicted job posting shares ' + date_run + ' ' + run_name)

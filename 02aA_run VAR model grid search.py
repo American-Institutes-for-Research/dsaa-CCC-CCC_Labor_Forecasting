@@ -14,7 +14,7 @@ grid_search(
     params_grid= {
         'trend': ['c', 'ct', 'ctt', 'n'],
         'max_lags': [1, 3, 6, 9, 12, 18],
-        'cand_features_num': [3, 5, 10, 20, 30],
+        'cand_features_num': [50,100,200,400],
         'ic': ['aic', 'fpe', 'hqic', 'bic', None]
     },
     default_params= {
@@ -26,5 +26,5 @@ grid_search(
         'test_tvalues':12
     },
     loop_func= run_VAR_loop,
-    batch_name = 'VAR grid search 12mo test subcat'
+    batch_name = 'VAR grid search 12mo test subcat v2'
 )

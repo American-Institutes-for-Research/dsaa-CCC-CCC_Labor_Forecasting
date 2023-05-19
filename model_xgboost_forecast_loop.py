@@ -29,14 +29,15 @@ from darts.models.forecasting.xgboost import XGBModel
 from darts.metrics import mape, rmse
 from darts.utils.timeseries_generation import datetime_attribute_timeseries
 from darts.utils.likelihood_models import QuantileRegression
-from datetime import datetime
+import datetime
 from utils import forecast_accuracy, visualize_predictions, results_analysis
 
 from utils import predQ, adf_test, invert_transformation
+from dateutil.relativedelta import relativedelta
 
 def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
                          input_len_used = 12, period_past_data = None, targets_sample = None, min_month_avg = 50, min_tot_inc = 50
-                         , ccc_taught_only = True, differenced = False, use_other_skill=True,
+                         , ccc_taught_only = True, differenced = False, use_other_skill=True, lags_past_covariates = 5,
                          hierarchy_lvl= 'skill', run_name = '', visualize_results = False, viz_sample=None):
     '''
     params:
@@ -56,7 +57,7 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
     Function to test run xgboost model with various parameters, and understand runtime
     '''
     run_name = run_name + ' lvl ' + hierarchy_lvl
-    date_run = datetime.now().strftime('%H_%M_%d_%m_%Y')
+    date_run = datetime.datetime.now().strftime('%H_%M_%d_%m_%Y')
     SPLIT = 0.9         # train/test %
 
     if result_log is None:
@@ -150,7 +151,7 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
         # if no postings exist, skip skill
         if df[t].sum() == 0:
             continue
-        start = datetime.now()
+        start = datetime.datetime.now()
         print('Modeling',n,'of',len(targets),'skills')
 
         # option to perform differencing on non-stationary skills
@@ -267,11 +268,14 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
             try:
                 model = XGBModel(
                     lags=input_len_used,
-                    # lags_past_covariates=12,
-                    output_chunk_length= output_chunk_len
+                    lags_past_covariates=lags_past_covariates,
+                    output_chunk_length= output_chunk_len,
+
                 )
                 model.fit(ts_ttrain,
-                                #past_covariates=covF_ttrain,
+                                past_covariates=covF_ttrain,
+                                val_series=ts_t,
+                                val_past_covariates=covF_t,
                                 verbose=True)
                 break
             except (FileNotFoundError, PermissionError, FileExistsError):
@@ -288,13 +292,13 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
 
         ts_tpred_long = model.predict(   n=output_chunk_len,
                                     series = ts_ttrain,
-                                    #past_covariates=covF_ttrain,
+                                    past_covariates=covF_t,
                                     verbose=True)
         # mark the test set for evaluation
         ts_tpred = ts_tpred_long[:len(ts_test)]
 
         # take the rest of the predictions and transform them back into a dataframe
-        ts_tfut = ts_tpred_long[len(ts_test):]
+        ts_tfut = ts_tpred_long
 
         # remove the scaler transform
         ts_tfut = scalerP.inverse_transform(ts_tfut)
@@ -316,6 +320,13 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
         pred_df = pd.concat([pred_df, pred_row],axis=1)
         pred_df.columns = columns.append(pd.Index([t]))
 
+        # make predictions date index
+        min_date = datetime.date(2022, 8, 1) + relativedelta(months=-len(ts_test))
+        max_date = min_date + relativedelta(months=+output_chunk_len-1)
+        dates = pd.period_range(min_date, max_date, freq='M')
+        fcast_date_idx = pd.DatetimeIndex(dates.to_timestamp())
+        pred_df.index = fcast_date_idx
+
         pd.options.display.float_format = '{:,.2f}'.format
         dfY = pd.DataFrame()
         dfY["Actual"] = TimeSeries.pd_series(ts_test)
@@ -324,9 +335,9 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
         accuracy_prod = forecast_accuracy(ts_tpred.values(), ts_test.values())
         row = pd.Series()
         row['target'] = t
-        row['Normalized RMSE'] = accuracy_prod['rmse'] / (df[t].max() - df[t].min())
+        row['Normalized RMSE'] = accuracy_prod['rmse'] #/ (df[t].max() - df[t].min())
         row['MAPE'] = accuracy_prod['mape']
-        row['runtime'] = datetime.now() - start
+        row['runtime'] = datetime.datetime.now() - start
         row['num_features_used'] = len(df_feat.columns)
 
         result_log = result_log.append(row, ignore_index=True)
@@ -355,7 +366,7 @@ def run_xgboost_loop(result_log = None, pred_df = None, start_val= 0,
                                           '.csv')
     if visualize_results:
         print('visualizing results')
-        visualize_predictions('predicted job posting shares '+date_run+' '+run_name, panel_data=True, sample = viz_sample)
+        visualize_predictions('predicted job posting shares '+date_run+' '+run_name, sample = viz_sample)
         results_analysis('predicted job posting shares '+date_run+' '+run_name)
 # obsolete function
 # def prepare_data():

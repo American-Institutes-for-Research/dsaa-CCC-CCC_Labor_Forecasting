@@ -36,7 +36,7 @@ from utils import predQ, adf_test, invert_transformation, visualize_predictions,
 def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
                     ,ENCODE = 4, DECODE = 4 , BATCH = 32, SPLIT=.9, result_log = None, pred_df = None, start_val= 0,
                          input_len_used = 12, period_past_data = None, targets_sample = None, min_month_avg = 50, min_tot_inc = 50
-                         , ccc_taught_only = True, differenced = False, hierarchy_lvl = 'skill', pred_len = None,
+                         , ccc_taught_only = True, differenced = False, hierarchy_lvl = 'skill', pred_len = None, use_covariates = True,
                          output_chunk_len = None, run_name = '',
                          analyze_results = True, viz_sample=None):
     '''
@@ -57,6 +57,7 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         targets_sample - length of subset of targets to train on; used for shortening runtimes of tests
         min_month_avg - minimum monthly average job postings for skill to be forecasted for
         min_tot_inc - minimum total increase between first and last observed month for skill to be forecasted for
+        use_covariates - whether to use covariates in the model predictions
         hierarchy_lvl - level of EMSI taxonomy to use: skill, subcategory, category
         pred_length - how many months out to make predictions for
         run_name - name to give run's log/results files.
@@ -323,6 +324,9 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
                     save_checkpoints=True,
                     force_reset=True
                 )
+                if not use_covariates:
+                    covF_ttrain = None
+                    covF_t = None
                 model.fit(ts_ttrain,
                                 val_series = ts_ttest,
                                 past_covariates=covF_ttrain,
@@ -342,6 +346,9 @@ def run_transformer_loop(EPOCHS=200,N_SAMPLES = 100,DIM_FF = 128,HEADS = 4
         # mark the test set for evaluation
         if pred_len is None:
             pred_len = output_chunk_len
+        if not use_covariates:
+            covF_t = None
+
         ts_tpred_long = model.predict(n=pred_len,
                                     series = ts_ttrain,
                                     past_covariates = covF_t,

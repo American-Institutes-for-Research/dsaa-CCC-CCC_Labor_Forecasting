@@ -187,7 +187,7 @@ def predQ(ts_t, q, scalerP, ts_test, quantile=True):
 
 
 # Analyze results of predictions
-def results_analysis(fcast_filename, create_vizs=False, panel_data = False):
+def results_analysis(fcast_filename, fcast_folder = 'output/', create_vizs=False, panel_data = False):
     '''
     Analyze the results of a particular forecast run
     :param fcast_filename: str, filename of the forecasts to analyze
@@ -197,7 +197,7 @@ def results_analysis(fcast_filename, create_vizs=False, panel_data = False):
     '''
     # verify we're using a model output file
     assert ('predicted job posting shares' in fcast_filename)
-    df = pd.read_csv('output/' + fcast_filename + '.csv', index_col=0)
+    df = pd.read_csv(fcast_folder + fcast_filename + '.csv', index_col=0)
     df = df.rename({'Unnamed: 1': 'month'}, axis=1)
     if panel_data:
         df = agg_panel_data(df)
@@ -412,7 +412,7 @@ def compare_results(runnames, labels, title, panel_indicators, hierarchy_lvl='sk
     None
     '''
     valid_labels = ['panel', "VAR", 'transformer','ProphetAR','ARIMA']
-    assert all([i in valid_labels for i in labels]),'all labels must be one of panel, VAR, transformer'
+    #assert all([i in valid_labels for i in labels]),'all labels must be one of panel, VAR, transformer'
     if hierarchy_lvl == 'subcategory':
         act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
     elif hierarchy_lvl == 'category':
@@ -589,11 +589,13 @@ def grid_search(params_grid, default_params, loop_func, batch_name, clear = True
     result_df = result_df.sort_values('RMSE')
     result_df.to_csv('result_logs/batch_'+ batch_name+'/RMSE summary.csv')
 
-def create_ensemble_results(runnames, labels, title, panel_indicators, extreme_change_thresh = 1000, min_monthly_obs = 50, hierarchy_lvl='skill'):
+def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_indicators = None, labels=None, types = None,
+                            batch_folder = '',  extreme_change_thresh = 1000, min_monthly_obs = 50, hierarchy_lvl='skill'):
     '''
     Produce combined ensemble estimates from two or more sets of results, choosing the lowest RMSE estimate for each skill
     :params:
     runnames: list of filenames of the runs of results to use for ensemble
+    runnames: list of folders containing the runs of results to use for ensemble
     labels: list of labels to use as shorthand for runnames in charts. Should be same length as runnames. Should take values: 'panel', "VAR", 'transformer','ProphetAR', 'ARIMA']
     title: string, title to give the ensemble
     panel_indicators: list of booleans indicating whether run files are panels or not
@@ -601,8 +603,9 @@ def create_ensemble_results(runnames, labels, title, panel_indicators, extreme_c
     None
     '''
 
-    valid_labels = ['panel', "VAR", 'transformer', 'ProphetAR', 'ARIMA']
-    assert all([i in valid_labels for i in labels]), 'all labels must be one of panel, VAR, transformer'
+    if types:
+        valid_types = ['panel', "VAR", 'transformer', 'ProphetAR', 'ARIMA']
+        assert all([i in valid_types for i in types]), 'all labels must be one of panel, VAR, transformer'
     if hierarchy_lvl == 'subcategory':
         act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
     elif hierarchy_lvl == 'category':
@@ -631,7 +634,7 @@ def create_ensemble_results(runnames, labels, title, panel_indicators, extreme_c
 
         dfs[runnames[n]] = pred_df
 
-        log_name = runnames[n].replace('predicted job posting shares', 'looped ' + labels[n] + ' model results')
+        log_name = runnames[n].replace('predicted job posting shares', 'looped ' + types[n] + ' model results')
         log_df = pd.read_csv('result_logs/' + log_name + '.csv', index_col=0)
         # some of the older logs need to be inverted
         if 'MAPE' not in log_df.columns:
