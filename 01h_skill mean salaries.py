@@ -14,6 +14,8 @@ my_list = os.listdir('data/us_postings')
 # tot_df = pd.read_csv('data/test monthly counts checkpoint.csv', index_col=0)
 first = True
 sal_df = pd.DataFrame()
+
+
 for i, f in enumerate(my_list):
     if i > -1 and '.csv.gz' in f:
         print('chunk', i, 'of', len(my_list), '-', f)
@@ -57,7 +59,9 @@ for i, f in enumerate(my_list):
             sal_df['tot'] = sal_df['tot'].fillna(0)
             sal_df['counts'] = sal_df['counts'] + sal_counts
             sal_df['counts'] = sal_df['counts'].fillna(0)
+
         first = False
+
         sal_df.to_csv('output/skill_salaries.csv')
 
 sal_df = pd.read_csv('output/skill_salaries.csv', index_col=0)

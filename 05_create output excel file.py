@@ -52,7 +52,7 @@ pred_df = cat_df[['category_clean','subcategory_clean','name']].rename(
 
 # merge in skill-level predictions
 pred_df = pred_df.merge(ensemble_df, left_on = 'skill', right_index= True)
-
+pred_df = pred_df.rename({'mean': 'Mean Salary'}, axis = 1)
 # add rows for the subcategory predictions
 scat_ensemble_df = scat_ensemble_df.reset_index().rename({'index':'subcategory'}, axis=1)
 # add categories of subcategories
@@ -78,8 +78,17 @@ pred_df = pred_df.drop('index',axis=1).reset_index(drop=True).reset_index()
 
 pred_df['index'] = pred_df['index'] + cat_ensemble_df.shape[0]
 pred_df = pd.concat([cat_ensemble_df,pred_df])
-pred_df = pred_df[['index','category','subcategory', 'skill', 'July 2022 actual', 'July 2024 predicted',
-       'Percent change', 'Monthly average obs', 'model','Normalized RMSE']]
+
+# reorder columns
+#pred_df = pred_df[['index','category','subcategory', 'skill', 'July 2022 actual', 'July 2024 predicted',
+#'Percentage change','Percentage Point change', 'Monthly average obs', 'model','Normalized RMSE']]
+
+# pred_df = pred_df[['index','category','subcategory', 'skill', 'July 2022 actual', 'July 2024 weighted predicted',
+#        'Percentage change','Percentage Point change', 'Mean Salary', 'Monthly average obs', 'Most common occ',
+#        '2nd most common occ', '3rd most common occ',
+#        '4th most common occ', '5th most common occ', 'Most common ind',
+#        '2nd most common ind', '3rd most common ind', '4th most common ind',
+#        '5th most common ind','Prediction std dev']]
 
 pred_df = pred_df.rename({'index':'scat_index'}, axis=1)
 pred_df = pred_df.groupby(['category'], group_keys=True).apply(lambda x: x.sort_values(['scat_index']))
@@ -88,7 +97,8 @@ pred_df = pred_df.drop('scat_index')
 pred_df = pred_df.loc[pred_df['Monthly average obs'] > min_obs]
 
 # keep the name of the model embedded in the model name
-pred_df['model'] = pred_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
+if 'model' in pred_df.columns:
+    pred_df['model'] = pred_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
 pred_df = pred_df.drop('scat_index',axis=1).reset_index(drop=True).reset_index().rename({'index':'rownum'}, axis=1)
 pred_df['rownum'] = pred_df.rownum + 2
 
@@ -135,9 +145,9 @@ for column in pred_df:
 
 # add all predictions for each hierarchy as a separate sheet
 cat_ensemble_df = cat_ensemble_df.drop('index', axis=1)
-cat_ensemble_df = cat_ensemble_df.sort_values('Percent change', ascending = False)
+cat_ensemble_df = cat_ensemble_df.sort_values('Percentage Point change', ascending = False)
 
-cat_ensemble_df['model'] = cat_ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
+#cat_ensemble_df['model'] = cat_ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
 cat_ensemble_df.to_excel(writer, sheet_name='Category', index= False)
 worksheet = writer.sheets['Category']
 for column in cat_ensemble_df:
@@ -146,10 +156,16 @@ for column in cat_ensemble_df:
     writer.sheets['Category'].set_column(col_idx, col_idx, column_length)
 worksheet.set_column('B:G', None, format1)
 
-scat_ensemble_df = scat_ensemble_df[['subcategory', 'category', 'July 2022 actual', 'July 2024 predicted',
-       'Percent change', 'Monthly average obs', 'model', 'Normalized RMSE']]
-scat_ensemble_df = scat_ensemble_df.sort_values('Percent change', ascending = False)
-scat_ensemble_df['model'] = scat_ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
+# scat_ensemble_df = scat_ensemble_df[['subcategory', 'category', 'July 2022 actual', 'July 2024 predicted',
+#        'Percent change', 'Monthly average obs']]
+# scat_ensemble_df = scat_ensemble_df[['subcategory', 'category', 'July 2022 actual', 'July 2024 weighted predicted',
+#        'Percentage change','Percentage Point change', 'Mean Salary', 'Monthly average obs', 'Most common occ',
+#        '2nd most common occ', '3rd most common occ',
+#        '4th most common occ', '5th most common occ', 'Most common ind',
+#        '2nd most common ind', '3rd most common ind', '4th most common ind',
+#        '5th most common ind','Prediction std dev']]
+scat_ensemble_df = scat_ensemble_df.sort_values('Percentage Point change', ascending = False)
+#scat_ensemble_df['model'] = scat_ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
 scat_ensemble_df.to_excel(writer, sheet_name='Subcategory', index= False)
 worksheet = writer.sheets['Subcategory']
 for column in scat_ensemble_df:
@@ -160,10 +176,16 @@ worksheet.set_column('B:G', None, format1)
 
 ensemble_df = ensemble_df.merge(cat_df[['category_clean','subcategory_clean','name']], left_index=True, right_on='name')
 ensemble_df = ensemble_df.rename({'category_clean':'category','subcategory_clean':'subcategory','name':'skill'},axis=1)
-ensemble_df = ensemble_df[['skill','category', 'subcategory', 'July 2022 actual', 'July 2024 predicted', 'Percent change',
-       'Monthly average obs', 'model', 'Normalized RMSE']]
-ensemble_df = ensemble_df.sort_values('Percent change', ascending = False)
-ensemble_df['model'] = ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
+# ensemble_df = ensemble_df[['skill','category', 'subcategory', 'July 2022 actual', 'July 2024 predicted', 'Percent change',
+#        'Monthly average obs', 'model', 'Normalized RMSE']]
+# ensemble_df = ensemble_df[['skill','subcategory', 'category', 'July 2022 actual', 'July 2024 weighted predicted',
+#        'Percentage change','Percentage Point change', 'Mean Salary', 'Monthly average obs', 'Most common occ',
+#        '2nd most common occ', '3rd most common occ',
+#        '4th most common occ', '5th most common occ', 'Most common ind',
+#        '2nd most common ind', '3rd most common ind', '4th most common ind',
+#        '5th most common ind','Prediction std dev']]
+ensemble_df = ensemble_df.sort_values('Percentage Point change', ascending = False)
+#ensemble_df['model'] = ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
 ensemble_df.to_excel(writer, sheet_name='Skill', index= False)
 worksheet = writer.sheets['Skill']
 for column in ensemble_df:

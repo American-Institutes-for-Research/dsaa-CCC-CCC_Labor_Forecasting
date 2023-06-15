@@ -20,6 +20,7 @@ import statsmodels
 import matplotlib.pyplot as plt
 import shutil
 import itertools
+from statsmodels.stats.weightstats import DescrStatsW
 
 def grangers_causation_matrix(data, variables, target, test='ssr_chi2test', verbose=False):
     """Check Granger Causality of all possible combinations of the Time series.
@@ -590,7 +591,8 @@ def grid_search(params_grid, default_params, loop_func, batch_name, clear = True
     result_df.to_csv('result_logs/batch_'+ batch_name+'/RMSE summary.csv')
 
 def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_indicators = None, labels=None, types = None,
-                            batch_folder = '',  extreme_change_thresh = 1000, min_monthly_obs = 50, hierarchy_lvl='skill'):
+                            batch_folder = '',  extreme_change_thresh = 1000, min_monthly_obs = 200, hierarchy_lvl='skill',
+                            model_selection = 'best'):
     '''
     Produce combined ensemble estimates from two or more sets of results, choosing the lowest RMSE estimate for each skill
     :params:
@@ -669,28 +671,123 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
     # drop rows for which no model makes a valid prediction
     rmse_compare = rmse_compare.dropna(how='all')
 
-    best_models = rmse_compare.idxmin(axis=1).dropna()
-    if hierarchy_lvl == 'skill':
-        best_models.index = [i.replace('Skill: ', '') for i in best_models.index]
+    # option to select model with lowest RMSE
+    if model_selection == 'best':
+        best_models = rmse_compare.idxmin(axis=1).dropna()
+        if hierarchy_lvl == 'skill':
+            best_models.index = [i.replace('Skill: ', '') for i in best_models.index]
 
-    ensemble_df = pd.DataFrame()
-    missing_count = 0
-    for skill,model in best_models.iteritems():
-        model_label = model.replace('RMSE model #','')
+        ensemble_df = pd.DataFrame()
+        missing_count = 0
+        for skill,model in best_models.iteritems():
+            model_label = model.replace('RMSE model #','')
 
-        # handful of skills are in the log dfs but not in the results dfs due to model  failures:
-        if skill in dfs[model_label].index:
-            row = dfs[model_label].loc[skill,:]
-            row['model'] = model_label
-            row['Normalized RMSE'] = rmse_compare.loc[skill,model]
-            ensemble_df = pd.concat([ensemble_df, row], axis = 1)
-        else:
-            missing_count += 1
-    print(ensemble_df.shape[1],'skills added to ensemble df.', missing_count, 'skills dropped due to lack of predictions made.')
-    ensemble_df = ensemble_df.T
+            # handful of skills are in the log dfs but not in the results dfs due to model  failures:
+            if skill in dfs[model_label].index:
+                row = dfs[model_label].loc[skill,:]
+                row['model'] = model_label
+                row['Normalized RMSE'] = rmse_compare.loc[skill,model]
+                ensemble_df = pd.concat([ensemble_df, row], axis = 1)
+            else:
+                missing_count += 1
+        print(ensemble_df.shape[1],'skills added to ensemble df.', missing_count, 'skills dropped due to lack of predictions made.')
+        ensemble_df = ensemble_df.T
+
+    # option to take average of all models, weighted by RMSE
+    if model_selection == 'weighted average':
+
+        # create a weighted df that's a min max transformation of the inverse of the RMSE value of the model
+        wgt_df = 1 - rmse_compare
+        # Define min-max normalization function
+        def min_max_transform(row):
+            min_val = row.min()
+            max_val = row.max()
+            transformed_row = (row - min_val) / (max_val - min_val)
+            return transformed_row
+
+        # Apply min-max transform row-wise using apply and lambda function
+        # then normalize so values in rows sum to 1
+        wgt_df = wgt_df.apply(lambda row: min_max_transform(row), axis=1)
+        wgt_df.columns = [i.replace('RMSE model #','') for i in wgt_df.columns]
+        ensemble_df = pd.DataFrame()
+        model_labels = [i.replace('RMSE model #', '') for i in rmse_compare.columns]
+        for skill in rmse_compare.index:
+            pred_values = pd.DataFrame(columns = df.columns)
+            # gather the predicted values of each model
+            skill_found = False
+            for label in model_labels:
+                if skill in dfs[label].index:
+                    pred_values.loc[label, :] = dfs[label].loc[skill,:]
+                    if not skill_found:
+                        addl_values = dfs[label].loc[skill,['July 2022 actual', 'Monthly average obs']]
+                        skill_found = True
+            if skill_found:
+                # merge in weights
+                pred_values['weight'] = wgt_df.loc[skill,:].div(wgt_df.loc[skill,:].sum())
+                pred_values['weight'] = pred_values['weight'].fillna(0)
+                pred_values = pred_values.dropna()
+                weighted_pred = (pred_values['July 2024 predicted'] * pred_values['weight']).sum()
+
+                # measure agreement of models
+                pred_std = DescrStatsW(pred_values['July 2024 predicted'].dropna(), weights=pred_values['weight'].dropna()).std
+                row = pd.Series([weighted_pred, pred_std], name = skill, index= ['July 2024 weighted predicted','Prediction std dev'])
+
+                # add values that are the same across all tools
+                row = pd.concat([addl_values, row])
+                row['Percentage Point change'] = row['July 2024 weighted predicted'] - row['July 2022 actual']
+                row['Percentage change'] = (row['July 2024 weighted predicted'] - row['July 2022 actual']) / row['July 2022 actual'] * 100
+                ensemble_df = pd.concat([ensemble_df,row], axis = 1)
+
+        ensemble_df = ensemble_df.T
+        # add model confidence based off of prediction standard deviation ratio to actual values
+        ensemble_df['std_est_ratio'] = ensemble_df['Prediction std dev'] / ensemble_df['July 2022 actual']
+
+        # cut offs will be for low, medium, and high categories.
+        ensemble_df.loc[(ensemble_df.std_est_ratio > .25),'Model Confidence'] = 'Low'
+        ensemble_df.loc[(ensemble_df.std_est_ratio <= .25) & (ensemble_df.std_est_ratio > .1), 'Model Confidence'] = 'Medium'
+        ensemble_df.loc[(ensemble_df.std_est_ratio <= .1), 'Model Confidence'] = 'High'
+        ensemble_df = ensemble_df.drop('std_est_ratio', axis=1)
+
+
 
     # remove predictions made on niche skills
     ensemble_df = ensemble_df.loc[ensemble_df['Monthly average obs'] >= min_monthly_obs]
+
+    # merge in mean salary and most common occupation/industries.
+    occ_df = pd.read_csv('output/most common 3dig occupations for each '+hierarchy_lvl+'.csv', index_col=0)
+    ind_df = pd.read_csv('output/most common 3dig industries for each '+hierarchy_lvl+'.csv', index_col=0)
+    sal_df = pd.read_csv('output/'+hierarchy_lvl+'_salaries with means.csv', index_col=0)
+    sal_df = sal_df.rename({'mean':'Mean Salary'}, axis=1)
+    if hierarchy_lvl == 'skill':
+        ensemble_df.index = [i.replace('Skill: ', '') for i in ensemble_df.index]
+    elif hierarchy_lvl == 'subcategory':
+        ensemble_df.index = [i.replace('Skill subcat: ', '') for i in ensemble_df.index]
+    elif hierarchy_lvl == 'category':
+        ensemble_df.index = [i.replace('Skill cat: ', '') for i in ensemble_df.index]
+
+    ensemble_df = ensemble_df.merge(sal_df[['Mean Salary']], left_index=True, right_index = True)
+
+    occ_df.columns = ['Most common occ','2nd most common occ', '3rd most common occ', '4th most common occ', '5th most common occ']
+    ind_df.columns = ['Most common ind', '2nd most common ind', '3rd most common ind', '4th most common ind',
+                      '5th most common ind']
+
+    ensemble_df = ensemble_df.merge(occ_df, left_index=True, right_index = True)
+    ensemble_df = ensemble_df.merge(ind_df, left_index=True, right_index=True)
+
+    # reorder columns
+    if model_selection == 'weighted average':
+        # make sure we account for all columns in ensemble_df
+        col_order = ['July 2022 actual',
+           'July 2024 weighted predicted',
+           'Percentage Point change', 'Percentage change', 'Model Confidence',
+           'Mean Salary', 'Most common occ', '2nd most common occ',
+           '3rd most common occ', '4th most common occ', '5th most common occ',
+           'Most common ind', '2nd most common ind', '3rd most common ind',
+           '4th most common ind', '5th most common ind','Monthly average obs','Prediction std dev']
+
+        assert len([i for i in ensemble_df.columns if i not in col_order]) == 0, 'unexpected columns for ensemble_df'
+
+        ensemble_df = ensemble_df[col_order]
 
     ensemble_df.to_csv('output/predicted changes/ensemble results '+title+'.csv')
     pass
