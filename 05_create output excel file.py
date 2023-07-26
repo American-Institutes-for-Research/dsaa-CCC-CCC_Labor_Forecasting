@@ -13,7 +13,7 @@ cat_title = 'VAR_ARIMA ensemble multiple models category level'
 title = 'VAR_ARIMA ensemble multiple models skill level'
 min_obs = 50
 model_labels = ['VAR', 'ARIMA']
-output_label = 'VAR_ARIMA ensemble multiple models formatted results'
+output_label = 'VAR_ARIMA ensemble multiple models formatted results 07212023'
 
 # load ensemble model results for all three hierarchy levels
 cat_ensemble_df = pd.read_csv('output/predicted changes/ensemble results '+cat_title+'.csv', index_col=0)
@@ -89,14 +89,14 @@ pred_df = pd.concat([cat_ensemble_df,pred_df])
 #        '4th most common occ', '5th most common occ', 'Most common ind',
 #        '2nd most common ind', '3rd most common ind', '4th most common ind',
 #        '5th most common ind','Prediction std dev']]
-
+pred_df = pred_df[['category','subcategory','skill'] + [i for i in pred_df.columns if i not in ['skill','subcategory','category']]]
 pred_df = pred_df.rename({'index':'scat_index'}, axis=1)
 pred_df = pred_df.groupby(['category'], group_keys=True).apply(lambda x: x.sort_values(['scat_index']))
 
 pred_df = pred_df.drop('scat_index')
 pred_df = pred_df.loc[pred_df['Monthly average obs'] > min_obs]
 
-# keep the name of the model embedded in the model name
+# keep the name of the model embed                                                                                                                                                                                                                                                                                                                                                               ded in the model name
 if 'model' in pred_df.columns:
     pred_df['model'] = pred_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
 pred_df = pred_df.drop('scat_index',axis=1).reset_index(drop=True).reset_index().rename({'index':'rownum'}, axis=1)
@@ -113,10 +113,17 @@ pred_df['rownum'] = pred_df.rownum + 2
 
 # turns out excel groupings need to have summary rows for category and subcategory at the bottom of the group, so we
 # will resort accordingly
-pred_df = pred_df.sort_values(['category','subcategory','skill']).drop('rownum',axis=1)
 
+
+# merge EMSI ID variables onto the data
+id_df = pd.read_excel('emsi_skills_api/EMSI_skills_with_categories.xlsx')
+pred_df = pred_df.merge(id_df[['name','id']], left_on = 'skill', right_on='name', how = 'left')
+pred_df = pred_df.drop('name', axis = 1).rename({'id':'EMSI_id'}, axis = 1)
+pred_df = pred_df[list(pred_df.columns[0:3])+['EMSI_id']+list(pred_df.columns[3:-1])]
+
+pred_df = pred_df.sort_values(['category','subcategory','skill']).drop('rownum',axis=1)
 writer = pd.ExcelWriter('output/exhibits/'+output_label+'.xlsx', engine='xlsxwriter')
-workbook  = writer.book
+workbook = writer.book
 
 pred_df.to_excel(writer, sheet_name='Grouped Skills', index= False)
 worksheet = writer.sheets['Grouped Skills']
@@ -133,9 +140,9 @@ for n, row in pred_df.iterrows():
 # set summary row of each group as the top row
 #worksheet.outline_settings(True, False, True, False)
 
-# format columns to be rounded to two decimal places
-format1 = workbook.add_format({'num_format': '0.000'})
-worksheet.set_column('D:I', None, format1)
+# format columns to be rounded to six decimal places
+#format1 = workbook.add_format({'num_format': '0.000000'})
+#worksheet.set_column('D:I', None, format1)
 
 # autofit column widths
 for column in pred_df:
@@ -147,6 +154,13 @@ for column in pred_df:
 cat_ensemble_df = cat_ensemble_df.drop('index', axis=1)
 cat_ensemble_df = cat_ensemble_df.sort_values('Percentage Point change', ascending = False)
 
+# merge in category id's
+# transform to dict objects
+cat_ids = pd.DataFrame([eval(i) for i in id_df['category'].unique() if not pd.isna(i)])
+cat_ensemble_df = cat_ensemble_df.merge(cat_ids, left_on = 'category', right_on = 'name')
+cat_ensemble_df = cat_ensemble_df.drop('name', axis = 1).rename({'id':'EMSI_cat_id'}, axis = 1)
+cat_ensemble_df = cat_ensemble_df[list(cat_ensemble_df.columns[0:1])+['EMSI_cat_id']+list(cat_ensemble_df.columns[1:-1])]
+
 #cat_ensemble_df['model'] = cat_ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
 cat_ensemble_df.to_excel(writer, sheet_name='Category', index= False)
 worksheet = writer.sheets['Category']
@@ -154,7 +168,7 @@ for column in cat_ensemble_df:
     column_length = max(cat_ensemble_df[column].astype(str).map(len).max(), len(column))
     col_idx = cat_ensemble_df.columns.get_loc(column)
     writer.sheets['Category'].set_column(col_idx, col_idx, column_length)
-worksheet.set_column('B:G', None, format1)
+#worksheet.set_column('C:H', None, format1)
 
 # scat_ensemble_df = scat_ensemble_df[['subcategory', 'category', 'July 2022 actual', 'July 2024 predicted',
 #        'Percent change', 'Monthly average obs']]
@@ -164,15 +178,25 @@ worksheet.set_column('B:G', None, format1)
 #        '4th most common occ', '5th most common occ', 'Most common ind',
 #        '2nd most common ind', '3rd most common ind', '4th most common ind',
 #        '5th most common ind','Prediction std dev']]
+
+scat_ensemble_df = scat_ensemble_df[['subcategory','category'] + [i for i in scat_ensemble_df.columns if i not in ['skill','subcategory','category']]]
 scat_ensemble_df = scat_ensemble_df.sort_values('Percentage Point change', ascending = False)
 #scat_ensemble_df['model'] = scat_ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
+
+# merge in subcategory id's
+# transform to dict objects
+scat_ids = pd.DataFrame([eval(i) for i in id_df['subcategory'].unique() if not pd.isna(i)])
+scat_ensemble_df = scat_ensemble_df.merge(scat_ids, left_on = 'subcategory', right_on = 'name')
+scat_ensemble_df = scat_ensemble_df.drop('name', axis = 1).rename({'id':'EMSI_scat_id'}, axis = 1)
+scat_ensemble_df = scat_ensemble_df[list(scat_ensemble_df.columns[0:2])+['EMSI_scat_id']+list(scat_ensemble_df.columns[2:-1])]
+
 scat_ensemble_df.to_excel(writer, sheet_name='Subcategory', index= False)
 worksheet = writer.sheets['Subcategory']
 for column in scat_ensemble_df:
     column_length = max(scat_ensemble_df[column].astype(str).map(len).max(), len(column))
     col_idx = scat_ensemble_df.columns.get_loc(column)
     writer.sheets['Subcategory'].set_column(col_idx, col_idx, column_length)
-worksheet.set_column('B:G', None, format1)
+#worksheet.set_column('D:I', None, format1)
 
 ensemble_df = ensemble_df.merge(cat_df[['category_clean','subcategory_clean','name']], left_index=True, right_on='name')
 ensemble_df = ensemble_df.rename({'category_clean':'category','subcategory_clean':'subcategory','name':'skill'},axis=1)
@@ -184,7 +208,12 @@ ensemble_df = ensemble_df.rename({'category_clean':'category','subcategory_clean
 #        '4th most common occ', '5th most common occ', 'Most common ind',
 #        '2nd most common ind', '3rd most common ind', '4th most common ind',
 #        '5th most common ind','Prediction std dev']]
+ensemble_df = ensemble_df[['skill','subcategory','category'] + [i for i in ensemble_df.columns if i not in ['skill','subcategory','category']]]
 ensemble_df = ensemble_df.sort_values('Percentage Point change', ascending = False)
+
+ensemble_df = ensemble_df.merge(id_df[['name','id']], left_on = 'skill', right_on='name')
+ensemble_df = ensemble_df.drop('name', axis = 1).rename({'id':'EMSI_id'}, axis = 1)
+ensemble_df = ensemble_df[list(ensemble_df.columns[0:3])+['EMSI_id']+list(ensemble_df.columns[3:-1])]
 #ensemble_df['model'] = ensemble_df.model.apply(lambda x: [i for i in x.split(' ') if i in model_labels][0])
 ensemble_df.to_excel(writer, sheet_name='Skill', index= False)
 worksheet = writer.sheets['Skill']
@@ -192,7 +221,7 @@ for column in ensemble_df:
     column_length = max(ensemble_df[column].astype(str).map(len).max(), len(column))
     col_idx = ensemble_df.columns.get_loc(column)
     writer.sheets['Skill'].set_column(col_idx, col_idx, column_length)
-worksheet.set_column('B:G', None, format1)
+#worksheet.set_column('C:H', None, format1)
 
 # close the workbook
 workbook.close()

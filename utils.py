@@ -739,13 +739,13 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
                 ensemble_df = pd.concat([ensemble_df,row], axis = 1)
 
         ensemble_df = ensemble_df.T
-        # add model confidence based off of prediction standard deviation ratio to actual values
-        ensemble_df['std_est_ratio'] = ensemble_df['Prediction std dev'] / ensemble_df['July 2022 actual']
+        # add Model Variance based off of prediction standard deviation ratio to actual values
+        ensemble_df['std_est_ratio'] = ensemble_df['Prediction std dev'] / ensemble_df['July 2024 weighted predicted']
 
         # cut offs will be for low, medium, and high categories.
-        ensemble_df.loc[(ensemble_df.std_est_ratio > .25),'Model Confidence'] = 'Low'
-        ensemble_df.loc[(ensemble_df.std_est_ratio <= .25) & (ensemble_df.std_est_ratio > .1), 'Model Confidence'] = 'Medium'
-        ensemble_df.loc[(ensemble_df.std_est_ratio <= .1), 'Model Confidence'] = 'High'
+        ensemble_df.loc[(ensemble_df.std_est_ratio > .25),'Model Variance'] = 'High'
+        ensemble_df.loc[(ensemble_df.std_est_ratio <= .25) & (ensemble_df.std_est_ratio > .1), 'Model Variance'] = 'Medium'
+        ensemble_df.loc[(ensemble_df.std_est_ratio <= .1), 'Model Variance'] = 'Low'
         ensemble_df = ensemble_df.drop('std_est_ratio', axis=1)
 
 
@@ -779,7 +779,7 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
         # make sure we account for all columns in ensemble_df
         col_order = ['July 2022 actual',
            'July 2024 weighted predicted',
-           'Percentage Point change', 'Percentage change', 'Model Confidence',
+           'Percentage Point change', 'Percentage change', 'Model Variance',
            'Mean Salary', 'Most common occ', '2nd most common occ',
            '3rd most common occ', '4th most common occ', '5th most common occ',
            'Most common ind', '2nd most common ind', '3rd most common ind',
