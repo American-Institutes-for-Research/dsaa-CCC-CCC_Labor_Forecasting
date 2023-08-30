@@ -18,8 +18,8 @@ warnings.simplefilter(action='ignore')
 import pandas as pd
 import datetime
 
-filenum = len(os.listdir('data/us_postings'))
-my_list = os.listdir('data/us_postings')
+#filenum = len(os.listdir('data/us_postings'))
+#my_list = os.listdir('data/us_postings')
 # tot_df = pd.read_csv('data/test monthly counts checkpoint.csv', index_col=0)
 cat_df = pd.read_excel('emsi_skills_api/EMSI_skills_with_categories.xlsx')
 cats = cat_df['category_clean'].dropna().unique()
@@ -35,14 +35,12 @@ for label, row in cat_df.iterrows():
     if not pd.isna(row.subcategory_clean):
         scats_dict[row['subcategory_clean']].append(row['name'])
 
-for idx, f in enumerate(my_list):
-    if idx > -1 and '.csv.gz' in f:
-        print('chunk', idx, 'of', len(my_list), '-', f)
+for idx,df in enumerate(pd.read_csv('data/2023_update/AIR Datapull Expanded.csv', chunksize=10000)):
+    if idx > -1:
+        print('chunk', idx)
         with open('working/01b_tracker.txt', 'w') as file:
             file.write(str(idx))
             file.close()
-
-        df = pd.read_csv('data/us_postings/' + f)
 
         df['POSTED'] = pd.to_datetime(df.POSTED).dt.date
         df = df.loc[df.POSTED.isna() == False]

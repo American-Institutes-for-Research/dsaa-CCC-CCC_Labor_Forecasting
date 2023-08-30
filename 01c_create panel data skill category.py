@@ -28,8 +28,7 @@ county_names = ['Cook, IL', 'DuPage, IL', 'Lake, IL', 'Will, IL', 'Kane, IL',
        'Lake, IN', 'McHenry, IL', 'Kenosha, WI', 'Porter, IN', 'DeKalb, IL',
        'Kendall, IL', 'Grundy, IL', 'Jasper, IN', 'Newton, IN']
 
-# create dictionaries of all created categories and the skills within the
-
+# create dictionaries of all created categories and the skills within the categories
 tot_dfs = {i:None for i in county_names}
 for label, row in cat_df.iterrows():
     if not pd.isna(row.category_clean):

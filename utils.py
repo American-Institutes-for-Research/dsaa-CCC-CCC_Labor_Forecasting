@@ -592,7 +592,7 @@ def grid_search(params_grid, default_params, loop_func, batch_name, clear = True
 
 def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_indicators = None, labels=None, types = None,
                             batch_folder = '',  extreme_change_thresh = 1000, min_monthly_obs = 200, hierarchy_lvl='skill',
-                            model_selection = 'best'):
+                            model_selection = 'best', output_occ_codes = False):
     '''
     Produce combined ensemble estimates from two or more sets of results, choosing the lowest RMSE estimate for each skill
     :params:
@@ -754,7 +754,10 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
     ensemble_df = ensemble_df.loc[ensemble_df['Monthly average obs'] >= min_monthly_obs]
 
     # merge in mean salary and most common occupation/industries.
-    occ_df = pd.read_csv('output/most common 3dig occupations for each '+hierarchy_lvl+'.csv', index_col=0)
+    if output_occ_codes:
+        occ_df = pd.read_csv('output/most common 3dig occupation codes for each ' + hierarchy_lvl + '.csv', index_col=0)
+    else:
+        occ_df = pd.read_csv('output/most common 3dig occupations for each '+hierarchy_lvl+'.csv', index_col=0)
     ind_df = pd.read_csv('output/most common 3dig industries for each '+hierarchy_lvl+'.csv', index_col=0)
     sal_df = pd.read_csv('output/'+hierarchy_lvl+'_salaries with means.csv', index_col=0)
     sal_df = sal_df.rename({'mean':'Mean Salary'}, axis=1)

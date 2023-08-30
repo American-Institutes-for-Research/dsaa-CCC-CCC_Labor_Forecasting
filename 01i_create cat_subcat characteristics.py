@@ -54,15 +54,20 @@ occ_df_rows = scat_occ_df.div(scat_occ_df.sum(axis=1), axis=0)
 occ_df_cols = scat_occ_df.div(scat_occ_df.sum(axis=0), axis=1)
 # for every subcat, name top 5 occupations that demand the subcat most frequently
 result_df = pd.DataFrame()
+result_df_codes = pd.DataFrame()
 for n, skill in enumerate(scat_occ_df.columns):
     if n % 100 == 0:
         print(n)
     skill_count = occ_df_cols[skill].sort_values(ascending=False)
     row = pd.Series([i[1] for i in list(skill_count.head(5).index)], name= skill)
     result_df = pd.concat([result_df, row], axis=1)
+    code_row = pd.Series([i[0] for i in list(skill_count.head(5).index)], name= skill)
+    result_df_codes = pd.concat([result_df_codes, code_row], axis=1)
 
 result_df = result_df.T
 result_df.to_csv('output/most common 3dig occupations for each subcategory.csv')
+result_df_codes = result_df_codes.T
+result_df_codes.to_csv('output/most common 3dig occupation codes for each subcategory.csv')
 
 # category and industry
 cat_ind_df = ind_df.groupby('category_clean').sum().T
@@ -86,14 +91,19 @@ occ_df_rows = cat_occ_df.div(cat_occ_df.sum(axis=1), axis=0)
 occ_df_cols = cat_occ_df.div(cat_occ_df.sum(axis=0), axis=1)
 # for every category, name top 5 occupations that demand the category most frequently uses
 result_df = pd.DataFrame()
+result_df_codes = pd.DataFrame()
 for n, skill in enumerate(cat_occ_df.columns):
     if n % 100 == 0:
         print(n)
     skill_count = occ_df_cols[skill].sort_values(ascending=False)
     row = pd.Series([i[1] for i in list(skill_count.head(5).index)], name= skill)
+    code_row = pd.Series([i[0] for i in list(skill_count.head(5).index)], name= skill)
     result_df = pd.concat([result_df, row], axis=1)
+    result_df_codes = pd.concat([result_df_codes, code_row], axis=1)
 
 result_df = result_df.T
 result_df.to_csv('output/most common 3dig occupations for each category.csv')
+result_df_codes = result_df_codes.T
+result_df_codes.to_csv('output/most common 3dig occupation codes for each category.csv')
 
 pass

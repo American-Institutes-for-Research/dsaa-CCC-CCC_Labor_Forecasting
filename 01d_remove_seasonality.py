@@ -47,8 +47,8 @@ def prepare_data(df, county):
     df = df.drop('date', axis=1)
 
     # export monthly average sample size
-    if county is None:
-        df.mean().to_csv('working/average monthly observations by counts ' + name + '.csv')
+    # if county is None:
+    #     df.mean().to_csv('working/average monthly observations by counts ' + name + '.csv')
 
     job_counts = df['Postings count'].copy()
     raw_df = df.copy()
@@ -59,9 +59,10 @@ def prepare_data(df, county):
 
 def seasonality_loop(df, name, county = None):
 
-    targets = df.columns
-    df = prepare_data(df, county)
 
+
+    df = prepare_data(df, county)
+    targets = df.columns
     # todo: check sensitivity for not doing this expand this series
     # expand series out 6 months in either direction with same value so seasonality can be removed
     # for all values in the original series
@@ -103,36 +104,36 @@ seasonality_loop(scat_df, 'subcategory')
 
 
 # repeat all of
-county_names = ['Cook, IL', 'DuPage, IL', 'Lake, IL', 'Will, IL', 'Kane, IL',
-       'Lake, IN', 'McHenry, IL', 'Kenosha, WI', 'Porter, IN', 'DeKalb, IL',
-       'Kendall, IL', 'Grundy, IL', 'Jasper, IN', 'Newton, IN']
+# county_names = ['Cook, IL', 'DuPage, IL', 'Lake, IL', 'Will, IL', 'Kane, IL',
+#        'Lake, IN', 'McHenry, IL', 'Kenosha, WI', 'Porter, IN', 'DeKalb, IL',
+#        'Kendall, IL', 'Grundy, IL', 'Jasper, IN', 'Newton, IN']
+#
+# for c in county_names:
+#     cdf = pd.read_csv('data/test monthly counts ' +c+'.csv')
+#     seasonality_loop(cdf, 'skill', c)
+#     cdf2 = pd.read_csv('data/test monthly counts '+c+' categories.csv')
+#     cat_df = df2[[i for i in df2.columns if 'Skill cat:' in i] + ['Unnamed: 0', 'Postings count']]
+#     seasonality_loop(cat_df, 'category', c)
+#     scat_df = df2[[i for i in df2.columns if 'Skill subcat:' in i] + ['Unnamed: 0', 'Postings count']]
+#     seasonality_loop(scat_df, 'subcategory', c)
 
-for c in county_names:
-    cdf = pd.read_csv('data/test monthly counts ' +c+'.csv')
-    seasonality_loop(cdf, 'skill', c)
-    cdf2 = pd.read_csv('data/test monthly counts '+c+' categories.csv')
-    cat_df = df2[[i for i in df2.columns if 'Skill cat:' in i] + ['Unnamed: 0', 'Postings count']]
-    seasonality_loop(cat_df, 'category', c)
-    scat_df = df2[[i for i in df2.columns if 'Skill subcat:' in i] + ['Unnamed: 0', 'Postings count']]
-    seasonality_loop(scat_df, 'subcategory', c)
 
-
-master_df = pd.DataFrame()
-master_df2 = pd.DataFrame()
-master_df3 = pd.DataFrame()
-for c in county_names:
-    df = pd.read_csv('data/test monthly counts season-adj ' + c + ' category.csv')
-    df2 = pd.read_csv('data/test monthly counts season-adj ' + c + ' subcategory.csv')
-    df3 = pd.read_csv('data/test monthly counts season-adj ' + c + ' skill.csv')
-    df['county'] = c
-    df2['county'] = c
-    df3['county'] = c
-    df = df.set_index(['county','date'])
-    df2 = df2.set_index(['county','date'])
-    df3 = df3.set_index(['county', 'date'])
-    master_df = pd.concat([master_df, df])
-    master_df2 = pd.concat([master_df2, df2])
-    master_df3 = pd.concat([master_df3, df3])
-master_df.to_csv('data/test monthly counts season-adj county category.csv')
-master_df2.to_csv('data/test monthly counts season-adj county subcategory.csv')
-master_df3.to_csv('data/test monthly counts season-adj county skill.csv')
+# master_df = pd.DataFrame()
+# master_df2 = pd.DataFrame()
+# master_df3 = pd.DataFrame()
+# for c in county_names:
+#     df = pd.read_csv('data/test monthly counts season-adj ' + c + ' category.csv')
+#     df2 = pd.read_csv('data/test monthly counts season-adj ' + c + ' subcategory.csv')
+#     df3 = pd.read_csv('data/test monthly counts season-adj ' + c + ' skill.csv')
+#     df['county'] = c
+#     df2['county'] = c
+#     df3['county'] = c
+#     df = df.set_index(['county','date'])
+#     df2 = df2.set_index(['county','date'])
+#     df3 = df3.set_index(['county', 'date'])
+#     master_df = pd.concat([master_df, df])
+#     master_df2 = pd.concat([master_df2, df2])
+#     master_df3 = pd.concat([master_df3, df3])
+# master_df.to_csv('data/test monthly counts season-adj county category.csv')
+# master_df2.to_csv('data/test monthly counts season-adj county subcategory.csv')
+# master_df3.to_csv('data/test monthly counts season-adj county skill.csv')

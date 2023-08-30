@@ -29,7 +29,8 @@ create_ensemble_results(
     ],
     title='VAR_ARIMA ensemble multiple models category level',
     hierarchy_lvl='category',
-    model_selection= 'weighted average'
+    model_selection= 'weighted average',
+    output_occ_codes= True
 )
 
 
@@ -44,7 +45,8 @@ create_ensemble_results(
     ],
     title='VAR_ARIMA ensemble multiple models subcategory level',
     hierarchy_lvl='subcategory',
-    model_selection='weighted average'
+    model_selection='weighted average',
+    output_occ_codes=True
 )
 
 create_ensemble_results(
@@ -58,7 +60,8 @@ create_ensemble_results(
     ],
     title='VAR_ARIMA ensemble multiple models skill level',
     hierarchy_lvl='skill',
-    model_selection= 'weighted average'
+    model_selection= 'weighted average',
+    output_occ_codes=True
 )
 
 

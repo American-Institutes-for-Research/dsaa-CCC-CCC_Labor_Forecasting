@@ -14,7 +14,7 @@ def run_ARIMA_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 1
                          input_len_used = 12, targets_sample = None, min_month_avg = 50, min_tot_inc = 50, cand_features_num=100
                          , ccc_taught_only = True, auto_reg = 3, max_diffs=2, moving_avg = 1, trend = None, use_exog = False,
                          hierarchy_lvl = 'skill', run_name = '', batch_name = None,
-                         analyze_results = True, viz_predictions = True, viz_sample=None):
+                         analyze_results = True, viz_predictions = True, viz_sample=None, custom_input_data_path = None):
     '''
     params:
         result_log - previous result log data frame
@@ -34,6 +34,7 @@ def run_ARIMA_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 1
         batch_name - folder with name of the batch of runs this run will be a part of
         analyze_results - whether to run results analysis at the end of the run
         viz_sample - param to pass for results analysis
+        custom_input_data_path - path to input data
 
     Function to test run transformer model with various parameters, and understand runtime
 
@@ -57,8 +58,10 @@ def run_ARIMA_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 1
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill', 'subcategory', 'category'])
-    df = pd.read_csv('data/test monthly counts season-adj ' + hierarchy_lvl + '.csv', index_col=0)
-
+    if custom_input_data_path is None:
+        df = pd.read_csv('data/test monthly counts season-adj ' + hierarchy_lvl + '.csv', index_col=0)
+    else:
+        df = pd.read_csv(custom_input_data_path, index_col=0)
     #--------------------
     # Feature Selection
     #-------------------

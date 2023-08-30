@@ -30,7 +30,7 @@ from utils import grangers_causation_matrix, cointegration_test, adf_test, forec
 def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12, test_tvalues = 5,
                          input_len_used = 12, targets_sample = None, min_month_avg = 50, min_tot_inc = 50, cand_features_num=100
                          , ccc_taught_only = True, max_diffs=2, hierarchy_lvl = 'skill', run_name = '', batch_name = None, trend= 'c',
-                         ic = None, analyze_results = True, season_adj = True, viz_sample=None):
+                         ic = None, analyze_results = True, season_adj = True, viz_sample=None, custom_input_data_path=None):
     '''
     params:
         result_log - previous result log data frame
@@ -49,6 +49,7 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         analyze_results - whether to run results analysis at the end of the run
         season_adj - boolean for whether to use seasonally adjusted data or not
         viz_sample - param to pass for results analysis
+        custom_input_data_path - path to input data
 
     Function to test run transformer model with various parameters, and understand runtime
 
@@ -71,10 +72,13 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         result_log = pd.DataFrame()
 
     assert (hierarchy_lvl in ['skill', 'subcategory', 'category'])
-    if season_adj:
-        df = pd.read_csv('data/test monthly counts season-adj ' + hierarchy_lvl + '.csv', index_col=0)
+    if custom_input_data_path is None:
+        if season_adj:
+            df = pd.read_csv('data/test monthly counts season-adj ' + hierarchy_lvl + '.csv', index_col=0)
+        else:
+            df = pd.read_csv('data/test monthly counts non-season-adj ' + hierarchy_lvl + '.csv', index_col=0)
     else:
-        df = pd.read_csv('data/test monthly counts non-season-adj ' + hierarchy_lvl + '.csv', index_col=0)
+        df = pd.read_csv(custom_input_data_path, index_col=0)
     #--------------------
     # Feature Selection
     #-------------------

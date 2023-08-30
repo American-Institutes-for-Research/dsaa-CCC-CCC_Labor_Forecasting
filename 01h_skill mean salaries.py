@@ -8,22 +8,21 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-filenum = len(os.listdir('data/us_postings'))
-# n = 10
-my_list = os.listdir('data/us_postings')
+# filenum = len(os.listdir('data/us_postings'))
+# # n = 10
+# my_list = os.listdir('data/us_postings')
 # tot_df = pd.read_csv('data/test monthly counts checkpoint.csv', index_col=0)
 first = True
 sal_df = pd.DataFrame()
 
 
-for i, f in enumerate(my_list):
-    if i > -1 and '.csv.gz' in f:
-        print('chunk', i, 'of', len(my_list), '-', f)
+for i,df in enumerate(pd.read_csv('data/2023_update/AIR Datapull Expanded.csv', chunksize=10000)):
+    if i > -1:
+        print('chunk', i)
         with open('working/01_tracker.txt', 'w') as file:
             file.write(str(i))
             file.close()
 
-        df = pd.read_csv('data/us_postings/' + f)
         df['SKILLS_NAME'] = df['SKILLS_NAME'].apply(lambda x: eval(x))
         df['salary'] = df[['SALARY_TO','SALARY_FROM']].mean(axis=1)
         # make unique list of skills

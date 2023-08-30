@@ -14,24 +14,27 @@ output: data/test monthly counts.csv
 import pandas as pd
 import os
 import datetime
+import warnings
+
+warnings.simplefilter('ignore')
 
 # import and append all data files
 
 # tot_df = pd.read_csv('data/test monthly counts.csv')
 
-filenum = len(os.listdir('data/us_postings'))
+filenum = len(os.listdir('data/2023_update'))
 # n = 10
-my_list = os.listdir('data/us_postings')
+my_list = os.listdir('data/2023_update')
 # tot_df = pd.read_csv('data/test monthly counts checkpoint.csv', index_col=0)
 first = True
-for i, f in enumerate(my_list):
-    if i > -1 and '.csv.gz' in f:
-        print('chunk', i, 'of', len(my_list), '-', f)
+for i,df in enumerate(pd.read_csv('data/2023_update/AIR Datapull Expanded.csv', chunksize=10000)):
+    if i > -1:
+        print('chunk', i)
         with open('working/01_tracker.txt', 'w') as file:
             file.write(str(i))
             file.close()
 
-        df = pd.read_csv('data/us_postings/' + f)
+        #df = pd.read_csv('data/2023_update/' + f)
 
         df['POSTED'] = pd.to_datetime(df.POSTED).dt.date
         df = df.loc[df.POSTED.isna() == False]
@@ -49,7 +52,7 @@ for i, f in enumerate(my_list):
 
         # establish range of dates to be analyzed
         min_date = datetime.date(2018, 1, 1)
-        max_date = datetime.date(2022, 8, 1)
+        max_date = datetime.date(2023, 8, 1)
         df = df.loc[df.POSTED > min_date]
         df = df.loc[df.POSTED < max_date]
 
@@ -75,7 +78,7 @@ for i, f in enumerate(my_list):
 
         #dates = skilldf['POSTED_YYYYMM'].unique()
         #dates.sort()
-        dates = [int(str(y) + str(m).zfill(2)) for y in range(2018, 2023) for m in range(1, 13)]
+        dates = [int(str(y) + str(m).zfill(2)) for y in range(2018, 2024) for m in range(1, 13)]
 
         for yyyymm in dates:
             filt_df = skilldf.loc[(skilldf.POSTED_YYYYMM <= yyyymm) &
@@ -101,5 +104,5 @@ for i, f in enumerate(my_list):
             new_cols = [i for i in cdf.columns if i not in tot_df.columns]
             tot_df = tot_df.merge(cdf[new_cols].fillna(0), left_index=True, right_index=True, how='left')
             tot_df = tot_df.fillna(0)
-            tot_df.to_csv('data/test monthly counts.csv')
+            tot_df.to_csv('data/test monthly counts 2023 update.csv')
         pass
