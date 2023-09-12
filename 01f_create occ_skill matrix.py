@@ -55,7 +55,7 @@ for i,df in enumerate(pd.read_csv('data/2023_update/AIR Datapull Expanded.csv', 
 
 # create normalized percentages of occupation matrix
 #occ_df = pd.read_csv('output/skill_occupation 3dig matrix.csv')
-occ_df = occ_df.set_index(['SOC_2021_3','SOC_2021_3_NAME'], drop=True)
+#occ_df = occ_df.set_index(['SOC_2021_3','SOC_2021_3_NAME'], drop=True)
 occ_df = occ_df.fillna(0)
 
 occ_df_rows = occ_df.div(occ_df.sum(axis=1), axis=0)

@@ -15,7 +15,7 @@ for i, row in param_df.head(20).iterrows():
         param_dict[p] = row[p]
 
     param_dicts.append(param_dict)
-param_dicts = param_dicts[14:]
+#param_dicts = param_dicts[:14]
 for lvl in ['category','subcategory', 'skill']:
 #for lvl in ['skill']:
     print(lvl)
@@ -25,7 +25,7 @@ for lvl in ['category','subcategory', 'skill']:
             print('param set', n)
             print(params)
             run_VAR_loop(hierarchy_lvl=lvl, ccc_taught_only=False, max_diffs=0,
-                           run_name='VAR top grid search runs 2023 #'+str(n), batch_name='VAR top grid search runs 2023',
+                           run_name='VAR top grid search runs 2023 #'+str(n), batch_name='VAR top grid search runs 2023 rerun',
                            analyze_results=False, test_tvalues=5, **params)
         except Exception as e:
             print('error with params:', params)

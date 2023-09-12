@@ -24,7 +24,7 @@ for lvl in ['category', 'subcategory', 'skill']:
         print('param set', n)
         try:
             run_ARIMA_loop(hierarchy_lvl=lvl, ccc_taught_only=False, max_diffs=0,
-                           run_name='ARIMA top grid search runs #'+str(n), batch_name='ARIMA top grid search runs',
+                           run_name='ARIMA top grid search runs 2023 #'+str(n), batch_name='ARIMA top grid search runs 2023',
                            analyze_results=True,viz_predictions=False,  test_tvalues=5, **params)
         except Exception as e:
             print('error with params:', p)
