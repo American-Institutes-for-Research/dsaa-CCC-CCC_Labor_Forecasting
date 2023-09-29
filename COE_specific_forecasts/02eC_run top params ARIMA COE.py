@@ -15,7 +15,7 @@ param_cols = ['auto_reg','moving_avg','trend']
 
 param_dicts = []
 for i, row in param_df.head(20).iterrows():
-    if i >= 5:
+    if i >= 0:
         param_dict = {}
         for p in param_cols:
             param_dict[p] = row[p]
@@ -23,20 +23,20 @@ for i, row in param_df.head(20).iterrows():
         param_dicts.append(param_dict)
 coe_names = ['Business','Construction','Culinary & Hospitality','Education & Child Development','Engineering & Computer Science',
              'Health Science','Information Technology','Manufacturing','Transportation, Distribution, & Logistics']
-param_dicts = param_dicts[10:]
 
 for coe in coe_names:
     print(coe)
-    for lvl in ['category', 'subcategory', 'skill']:
+    #for lvl in ['skill', 'subcategory', 'category']:
+    for lvl in ['skill']:
         print(lvl)
         for n, params in enumerate(param_dicts):
             print('param set', n)
             try:
                 run_ARIMA_loop(hierarchy_lvl=lvl, ccc_taught_only=False, max_diffs=0,
-                               run_name='COE '+coe+' ARIMA run #'+str(n), batch_name='COE ARIMA runs pt 3',
+                               run_name='COE '+coe+' ARIMA run #'+str(n), batch_name='COE ARIMA runs v2',
                                analyze_results=True,viz_predictions=False,  test_tvalues=5,
-                               custom_input_data_path= 'data/COE/test monthly counts season-adj ' + coe + ' ' + lvl +'.csv'
-                               , **params)
+                               custom_input_data_path= 'data/test monthly counts season-adj ' + coe + ' ' + lvl +'.csv'
+                               , custom_raw_path = 'data/COE/test monthly counts ' + coe + ' combined.csv', **params)
             except Exception as e:
                 print('error with params:', p)
                 print('error message:', e)

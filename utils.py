@@ -188,7 +188,8 @@ def predQ(ts_t, q, scalerP, ts_test, quantile=True):
 
 
 # Analyze results of predictions
-def results_analysis(fcast_filename, fcast_folder = 'output/', create_vizs=False, panel_data = False):
+def results_analysis(fcast_filename, fcast_folder = 'output/', create_vizs=False, panel_data = False, countdf=None, raw_df=None,
+                     act_varname = 'July 2022 actual', pred_varname = 'July 2024 predicted' ):
     '''
     Analyze the results of a particular forecast run
     :param fcast_filename: str, filename of the forecasts to analyze
@@ -203,22 +204,38 @@ def results_analysis(fcast_filename, fcast_folder = 'output/', create_vizs=False
     if panel_data:
         df = agg_panel_data(df)
 
-    if 'lvl subcategory' in fcast_filename:
-        countdf = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
-        raw_df = pd.read_csv("data/test monthly counts categories.csv", index_col=0)
-        raw_df = raw_df[[i for i in raw_df.columns if 'Skill cat:' not in i]]
+    # load the season adjusted and non seasonally adjusted counts files if not fed as parameters
+    if raw_df is None:
+        if 'lvl subcategory' in fcast_filename:
+            raw_df = pd.read_csv("data/test monthly counts categories 2023 update.csv", index_col=0)
+            raw_df = raw_df[[i for i in raw_df.columns if 'Skill cat:' not in i]]
 
-    elif 'lvl category' in fcast_filename:
-        countdf = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
-        raw_df = pd.read_csv("data/test monthly counts categories.csv", index_col=0)
-        raw_df = raw_df[[i for i in raw_df.columns if 'Skill subcat:' not in i]]
+        elif 'lvl category' in fcast_filename:
+            raw_df = pd.read_csv("data/test monthly counts categories 2023 update.csv", index_col=0)
+            raw_df = raw_df[[i for i in raw_df.columns if 'Skill subcat:' not in i]]
 
-    else:
-        countdf = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
-        raw_df = pd.read_csv("data/test monthly counts.csv", index_col=0)
+        else:
+            raw_df = pd.read_csv("data/test monthly counts 2023 update.csv", index_col=0)
 
-    raw_df = raw_df.fillna(method='ffill')
-    raw_df = raw_df.iloc[7:55, :]
+        raw_df = raw_df.fillna(method='ffill')
+        # 2022 files
+        if raw_df.shape[0] == 60:
+            raw_df = raw_df.iloc[7:67, :]
+        # 2023 files
+        elif raw_df.shape[0] == 72:
+            raw_df = raw_df.iloc[7:67, :]
+        else:
+            raise('expected raw_df to have either 60 or 72 rows')
+
+    if countdf is None:
+        if 'lvl subcategory' in fcast_filename:
+            countdf = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+
+        elif 'lvl category' in fcast_filename:
+            countdf = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+
+        else:
+            countdf = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
 
     # clean up some duplicated columns in the forecast
     df = df.drop([i for i in df.columns if '1' in i], axis=1)
@@ -235,7 +252,7 @@ def results_analysis(fcast_filename, fcast_folder = 'output/', create_vizs=False
 
     result_df = pd.concat([lactual, pred_values, change], axis=1)
 
-    result_df.columns = ['July 2022 actual', 'July 2024 predicted', 'Percent change']
+    result_df.columns = [act_varname, pred_varname, 'Percent change']
 
     result_df = result_df.sort_values('Percent change', ascending=False)
 
@@ -591,8 +608,9 @@ def grid_search(params_grid, default_params, loop_func, batch_name, clear = True
     result_df.to_csv('result_logs/batch_'+ batch_name+'/RMSE summary.csv')
 
 def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_indicators = None, labels=None, types = None,
-                            batch_folder = '',  extreme_change_thresh = 1000, min_monthly_obs = 200, hierarchy_lvl='skill',
-                            model_selection = 'best', output_occ_codes = False):
+                            batch_names = [],  extreme_change_thresh = 1000, min_monthly_obs = 200, hierarchy_lvl='skill',
+                            model_selection = 'best', output_occ_codes = False, do_results_analysis=False, use_coe_fcast_folder = False,
+                            log_folder = 'result_logs/', act_df = None, raw_df = None, rerun_2023 = True):
     '''
     Produce combined ensemble estimates from two or more sets of results, choosing the lowest RMSE estimate for each skill
     :params:
@@ -608,12 +626,13 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
     if types:
         valid_types = ['panel', "VAR", 'transformer', 'ProphetAR', 'ARIMA']
         assert all([i in valid_types for i in types]), 'all labels must be one of panel, VAR, transformer'
-    if hierarchy_lvl == 'subcategory':
-        act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
-    elif hierarchy_lvl == 'category':
-        act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
-    else:
-        act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
+    if act_df is None:
+        if hierarchy_lvl == 'subcategory':
+            act_df = pd.read_csv('data/test monthly counts season-adj subcategory.csv', index_col=0)
+        elif hierarchy_lvl == 'category':
+            act_df = pd.read_csv('data/test monthly counts season-adj category.csv', index_col=0)
+        else:
+            act_df = pd.read_csv('data/test monthly counts season-adj skill.csv', index_col=0)
 
     act_df.index = pd.to_datetime(act_df.index)
 
@@ -621,7 +640,27 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
     log_dfs = {}
     cols = []
     rmse_compare = pd.DataFrame()
+    if rerun_2023:
+        act_varname = 'July 2023 actual'
+        pred_varname = 'July 2025 predicted'
+    else:
+        act_varname = 'July 2022 actual'
+        pred_varname = 'July 2024 predicted'
+
     for n, l in enumerate(labels):
+        if do_results_analysis:
+            if use_coe_fcast_folder:
+                if 'VAR' in l:
+                    fcast_folder = 'output/batch_COE VAR runs v2/'
+                if 'ARIMA' in l:
+                    fcast_folder = 'output/batch_COE ARIMA runs v2/'
+            else:
+                if 'VAR' in l:
+                    fcast_folder = 'output/batch_VAR top grid search runs 2023 rerun/'
+                if 'ARIMA' in l:
+                    fcast_folder = 'output/batch_ARIMA top grid search runs 2023/'
+
+            results_analysis(fcast_filename=runnames[n], fcast_folder=fcast_folder, countdf = act_df, raw_df = raw_df, act_varname=act_varname, pred_varname=pred_varname)
         pred_df = pd.read_csv('output/predicted changes/' + runnames[n].replace('predicted job posting shares','predicted changes') + '.csv', index_col=0)
 
         if panel_indicators[n]:
@@ -635,9 +674,23 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
             cols = [i for i in cols if i in pred_df.columns.values]
 
         dfs[runnames[n]] = pred_df
-
         log_name = runnames[n].replace('predicted job posting shares', 'looped ' + types[n] + ' model results')
-        log_df = pd.read_csv('result_logs/' + log_name + '.csv', index_col=0)
+
+        # if part of batches, identify the log folder the log can be found in
+        if batch_names:
+            found = False
+            for folder in batch_names:
+                if os.path.exists('result_logs/'+folder+'/'+ log_name+'.csv'):
+                    log_folder = 'result_logs/'+folder + '/'
+                    found = True
+                    break
+            assert found, 'batch log folder not found'
+        else:
+            log_folder = log_folder
+
+
+
+        log_df = pd.read_csv(log_folder + log_name + '.csv', index_col=0)
         # some of the older logs need to be inverted
         if 'MAPE' not in log_df.columns:
             log_df = log_df.T
@@ -660,7 +713,7 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
     # here we will remove these model's estimates from consideration for those skills
 
     for model, df in zip(dfs.keys(), dfs.values()):
-        err_df = df.loc[(df['July 2024 predicted'] > 1) | (df['July 2024 predicted'] < 0) | (df['Percent change'].abs() > extreme_change_thresh)]
+        err_df = df.loc[(df[pred_varname] > 1) | (df[pred_varname] < 0) | (df['Percent change'].abs() > extreme_change_thresh)]
         print('for hierarchy level:',hierarchy_lvl, 'and model:',model)
         print(err_df.shape[0], ' predictions were too extreme or out of the [0,1] domain, and were removed from model candidates')
 
@@ -719,33 +772,37 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
                 if skill in dfs[label].index:
                     pred_values.loc[label, :] = dfs[label].loc[skill,:]
                     if not skill_found:
-                        addl_values = dfs[label].loc[skill,['July 2022 actual', 'Monthly average obs']]
+                        addl_values = dfs[label].loc[skill,[act_varname, 'Monthly average obs']]
                         skill_found = True
-            if skill_found:
+            if skill_found and wgt_df.loc[skill,:].sum() > 0:
                 # merge in weights
                 pred_values['weight'] = wgt_df.loc[skill,:].div(wgt_df.loc[skill,:].sum())
                 pred_values['weight'] = pred_values['weight'].fillna(0)
                 pred_values = pred_values.dropna()
-                weighted_pred = (pred_values['July 2024 predicted'] * pred_values['weight']).sum()
+                weighted_pred = (pred_values[pred_varname] * pred_values['weight']).sum()
 
                 # measure agreement of models
-                pred_std = DescrStatsW(pred_values['July 2024 predicted'].dropna(), weights=pred_values['weight'].dropna()).std
-                row = pd.Series([weighted_pred, pred_std], name = skill, index= ['July 2024 weighted predicted','Prediction std dev'])
+                weighted_varname = pred_varname.replace('predicted','weighted predicted')
+                pred_std = DescrStatsW(pred_values[pred_varname].dropna(), weights=pred_values['weight'].dropna()).std
+                row = pd.Series([weighted_pred, pred_std], name = skill, index= [weighted_varname,'Prediction std dev'])
 
                 # add values that are the same across all tools
                 row = pd.concat([addl_values, row])
-                row['Percentage Point change'] = row['July 2024 weighted predicted'] - row['July 2022 actual']
-                row['Percentage change'] = (row['July 2024 weighted predicted'] - row['July 2022 actual']) / row['July 2022 actual'] * 100
+                row['Percentage Point change'] = row[weighted_varname] - row[act_varname]
+                row['Percentage change'] = (row[weighted_varname] - row[act_varname]) / row[act_varname] * 100
+                row['Number of Models'] = pred_values.loc[pred_values.weight > 0].shape[0]
+                row['Average RMSE'] = rmse_compare.loc[skill,:].mean()
                 ensemble_df = pd.concat([ensemble_df,row], axis = 1)
 
         ensemble_df = ensemble_df.T
         # add Model Variance based off of prediction standard deviation ratio to actual values
-        ensemble_df['std_est_ratio'] = ensemble_df['Prediction std dev'] / ensemble_df['July 2024 weighted predicted']
+        ensemble_df['std_est_ratio'] = ensemble_df['Prediction std dev'] / ensemble_df[weighted_varname]
 
         # cut offs will be for low, medium, and high categories.
         ensemble_df.loc[(ensemble_df.std_est_ratio > .25),'Model Variance'] = 'High'
         ensemble_df.loc[(ensemble_df.std_est_ratio <= .25) & (ensemble_df.std_est_ratio > .1), 'Model Variance'] = 'Medium'
         ensemble_df.loc[(ensemble_df.std_est_ratio <= .1), 'Model Variance'] = 'Low'
+        ensemble_df.loc[(ensemble_df['Number of Models'] == 1), 'Model Variance'] = 'N/A, only one model used'
         ensemble_df = ensemble_df.drop('std_est_ratio', axis=1)
 
 
@@ -780,13 +837,13 @@ def create_ensemble_results(title, runnames= None, runnames_folders=None, panel_
     # reorder columns
     if model_selection == 'weighted average':
         # make sure we account for all columns in ensemble_df
-        col_order = ['July 2022 actual',
-           'July 2024 weighted predicted',
+        col_order = [act_varname,
+           weighted_varname,
            'Percentage Point change', 'Percentage change', 'Model Variance',
            'Mean Salary', 'Most common occ', '2nd most common occ',
            '3rd most common occ', '4th most common occ', '5th most common occ',
            'Most common ind', '2nd most common ind', '3rd most common ind',
-           '4th most common ind', '5th most common ind','Monthly average obs','Prediction std dev']
+           '4th most common ind', '5th most common ind','Monthly average obs','Prediction std dev', 'Number of Models', 'Average RMSE']
 
         assert len([i for i in ensemble_df.columns if i not in col_order]) == 0, 'unexpected columns for ensemble_df'
 

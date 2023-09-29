@@ -17,8 +17,11 @@ for i, row in param_df.head(20).iterrows():
         param_dict[p] = row[p]
 
     param_dicts.append(param_dict)
-
-for lvl in ['category', 'subcategory', 'skill']:
+offset = 11
+#param_dicts = param_dicts[offset:]
+param_dicts = param_dicts[:offset]
+#for lvl in ['category', 'subcategory', 'skill']:
+for lvl in ['skill']:
     print(lvl)
     for n, params in enumerate(param_dicts):
         print('param set', n)

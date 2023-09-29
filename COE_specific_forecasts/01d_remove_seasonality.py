@@ -33,8 +33,8 @@ def prepare_data(df):
     df = df.rename({'Unnamed: 0': 'date'}, axis=1)
     df['month'] = df['date'].str[5:7].astype('int')
     df = df.fillna(method='ffill')
-    # 7-55 filter is to remove months with 0 obs
-    df = df.iloc[7:55, :].reset_index(drop=True)
+    # 7-67 filter is to remove months with 0 obs and filter to August 2018 to August 2023
+    df = df.iloc[7:67, :].reset_index(drop=True)
 
     # create times series index
     date_idx = pd.to_datetime(df['date'])
@@ -100,7 +100,8 @@ coe_names = ['Business','Construction','Culinary & Hospitality','Education & Chi
              'Health Science','Information Technology','Manufacturing','Transportation, Distribution, & Logistics']
 
 for c in coe_names:
-    cdf = pd.read_csv('data/COE/test monthly counts '+c+' categories.csv')
+    print(c)
+    cdf = pd.read_csv('data/COE/test monthly counts '+c+' combined.csv')
     cdf2 = cdf[[i for i in cdf.columns if 'Skill:' in i] + ['Unnamed: 0', 'Postings count']]
     seasonality_loop(cdf2, 'skill', c)
     cat_df = cdf[[i for i in cdf.columns if 'Skill cat:' in i] + ['Unnamed: 0', 'Postings count']]

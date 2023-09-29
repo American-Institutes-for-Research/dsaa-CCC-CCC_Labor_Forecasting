@@ -8,12 +8,12 @@ import pandas as pd
 import numpy as np
 import xlsxwriter
 
-scat_title = 'VAR_ARIMA ensemble multiple models subcategory level'
-cat_title = 'VAR_ARIMA ensemble multiple models category level'
-title = 'VAR_ARIMA ensemble multiple models skill level'
+scat_title = 'VAR_ARIMA ensemble overall 2023 rerun subcategory level reformatted 09262023'
+cat_title = 'VAR_ARIMA ensemble overall 2023 rerun category level reformatted 09262023'
+title = 'VAR_ARIMA ensemble overall 2023 rerun skill level 09262023'
 min_obs = 50
 model_labels = ['VAR', 'ARIMA']
-output_label = 'VAR_ARIMA ensemble multiple models formatted results 07282023'
+output_label = 'VAR_ARIMA ensemble overall 2023 rerun results 09262023'
 
 # load ensemble model results for all three hierarchy levels
 cat_ensemble_df = pd.read_csv('output/predicted changes/ensemble results '+cat_title+'.csv', index_col=0)

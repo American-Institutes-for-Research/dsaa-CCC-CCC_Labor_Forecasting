@@ -30,7 +30,8 @@ from utils import grangers_causation_matrix, cointegration_test, adf_test, forec
 def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12, test_tvalues = 5,
                          input_len_used = 12, targets_sample = None, min_month_avg = 50, min_tot_inc = 50, cand_features_num=100
                          , ccc_taught_only = True, max_diffs=2, hierarchy_lvl = 'skill', run_name = '', batch_name = None, trend= 'c',
-                         ic = None, analyze_results = True, season_adj = True, viz_sample=None, custom_input_data_path=None):
+                         ic = None, analyze_results = True, season_adj = True, viz_sample=None, custom_input_data_path=None
+                        , custom_raw_path = None, save_models = False):
     '''
     params:
         result_log - previous result log data frame
@@ -50,10 +51,6 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         season_adj - boolean for whether to use seasonally adjusted data or not
         viz_sample - param to pass for results analysis
         custom_input_data_path - path to input data
-
-    Function to test run transformer model with various parameters, and understand runtime
-
-    Primarily based off of this post: https://www.machinelearningplus.com/time-series/vector-autoregression-examples-python/
     '''
     run_name = run_name + ' lvl ' + hierarchy_lvl
     if batch_name is not None:
@@ -86,17 +83,21 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
     if hierarchy_lvl == 'skill':
         # look only for those skills with mean 50 postings, or whose postings count have increased by 50 from the first to last month monitored
 
-        raw_df = pd.read_csv('data/test monthly counts.csv')
+        if custom_raw_path is None:
+            raw_df = pd.read_csv('data/test monthly counts 2023 update.csv')
+        else:
+            raw_df = pd.read_csv(custom_raw_path)
         raw_df = raw_df.rename({'Unnamed: 0': 'date'}, axis=1)
         raw_df = raw_df.fillna(method='ffill')
-        # 7-55 filter is to remove months with 0 obs
-        raw_df = raw_df.iloc[7:55, :].reset_index(drop=True)
+        # 7-67 filter is to remove months with 0 obs
+        raw_df = raw_df.iloc[7:67, :].reset_index(drop=True)
         # normalize all columns based on job postings counts
         raw_df = raw_df.drop('date', axis=1)
 
         # identify those skills who have from first to last month by at least 50 postings
         demand_diff = raw_df.T.iloc[:, -1] - raw_df.T.iloc[:, 0]
         targets = raw_df.mean(numeric_only=True).loc[(raw_df.mean(numeric_only=True)>min_month_avg)|(demand_diff > min_tot_inc)].index
+        targets = [i for i in targets if 'Skill:' in i and i in df.columns]
     else:
         targets = [i for i in df.columns if 'Skill' in i]
 
@@ -135,10 +136,16 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
             covid_df = pd.concat([covid_df, pd.DataFrame([[y, m, 0]], columns= ['year','month','hospitalizations'])])
     covid_df = pd.concat([covid_df, pd.DataFrame([[2020, 1, 0]], columns=['year', 'month', 'hospitalizations'])])
     covid_df = pd.concat([covid_df, pd.DataFrame([[2020, 2, 0]], columns=['year', 'month', 'hospitalizations'])])
+    covid_df = pd.concat([covid_df, pd.DataFrame([[2023, 2, 0]], columns=['year', 'month', 'hospitalizations'])])
+    covid_df = pd.concat([covid_df, pd.DataFrame([[2023, 3, 0]], columns=['year', 'month', 'hospitalizations'])])
+    covid_df = pd.concat([covid_df, pd.DataFrame([[2023, 4, 0]], columns=['year', 'month', 'hospitalizations'])])
+    covid_df = pd.concat([covid_df, pd.DataFrame([[2023, 5, 0]], columns=['year', 'month', 'hospitalizations'])])
+    covid_df = pd.concat([covid_df, pd.DataFrame([[2023, 6, 0]], columns=['year', 'month', 'hospitalizations'])])
+    covid_df = pd.concat([covid_df, pd.DataFrame([[2023, 7, 0]], columns=['year', 'month', 'hospitalizations'])])
 
     # reshape to match the features data set and merge with features data
     covid_df = covid_df.sort_values(['year','month']).reset_index(drop=True)
-    covid_df = covid_df.iloc[7:55,:]
+    covid_df = covid_df.iloc[7:67,:]
     covid_df.index = date_idx
     covid_df = covid_df.drop(['year','month'],axis=1)
 
@@ -296,17 +303,17 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         else:
             p_order = max_lags
         model_fitted = model.fit(p_order, trend=trend, ic=ic)
-
-        # print model summary to log file
-        old_stdout = sys.stdout
-        log_file = open("result_logs/var_models/VAR model summary "+t.replace(":", "").replace('/','').replace("*",'')+".txt", "w")
-        sys.stdout = log_file
-        try:
-            print(model_fitted.summary())
-        except Exception as e:
-            print(e)
-        sys.stdout = old_stdout
-        log_file.close()
+        if save_models:
+            # print model summary to log file
+            old_stdout = sys.stdout
+            log_file = open("result_logs/var_models/VAR model summary "+t.replace(":", "").replace('/','').replace("*",'')+".txt", "w")
+            sys.stdout = log_file
+            try:
+                print(model_fitted.summary())
+            except Exception as e:
+                print(e)
+            sys.stdout = old_stdout
+            log_file.close()
 
         # check to see if serial correlation is present
         dw_result = durbin_watson(model_fitted.resid)
@@ -320,15 +327,15 @@ def run_VAR_loop(result_log = None, pred_df = None, start_val= 0, max_lags = 12,
         # conduct forecast
         lag_order = model_fitted.k_ar
         forecast_input = df_differenced.values[-lag_order:]
+        months_of_data = df_train.shape[0]
 
-        # we can predict a maximum of 43 time steps into the future (with 43 time steps of past data),
-        # so we will forecast length equal to 43 minus the number of time steps used as input length
-        fc = model_fitted.forecast(y=forecast_input, steps= 43 - input_len_used)
+        # we can predict a maximum of time steps into the future equal to the time steps of past data,
+        # so we will forecast length equal to this number minus the number of time steps used as input length
+        fc = model_fitted.forecast(y=forecast_input, steps= months_of_data - input_len_used)
 
         # create forecasted date index; our forecast starts at the first time step of the test data set and extends
-        # 43 - input_len_used time steps forward
-        min_date = datetime.date(2022, 8, 1) - relativedelta(months=-test_tvalues)
-        max_date = min_date + relativedelta(months=+42-input_len_used)
+        min_date = datetime.date(2023, 8, 1) + relativedelta(months=-test_tvalues)
+        max_date = min_date + relativedelta(months=+months_of_data - 1 - input_len_used)
         dates = pd.period_range(min_date, max_date, freq='M')
         date_idx = pd.DatetimeIndex(dates.to_timestamp())
 

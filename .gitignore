@@ -8,3 +8,4 @@ result_logs/batch*
 output/batch*
 data.zip
 *~$*
+*/zzmisc_upload_rawdata_to_teams.py

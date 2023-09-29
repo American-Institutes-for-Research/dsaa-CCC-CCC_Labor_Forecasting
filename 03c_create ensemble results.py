@@ -9,8 +9,8 @@ calls to create ensemble results between two or more different runs based on bes
 from utils import create_ensemble_results
 import os
 
-var_runs = os.listdir('output/batch_VAR top grid search runs cat_subcat')
-arima_runs = os.listdir('output/batch_ARIMA top grid search runs')
+var_runs = os.listdir('output/batch_VAR top grid search runs 2023 rerun')
+arima_runs = os.listdir('output/batch_ARIMA top grid search runs 2023')
 var_skill_runs = [i.replace('.csv','') for i in var_runs if 'skill' in i]
 var_subcat_runs = [i.replace('.csv','') for i in var_runs if 'subcategory' in i]
 var_cat_runs = [i.replace('.csv','') for i in var_runs if ' category' in i]
@@ -27,10 +27,13 @@ create_ensemble_results(
     panel_indicators=[
         False for i in range(len(var_cat_runs + arima_cat_runs))
     ],
-    title='VAR_ARIMA ensemble multiple models category level',
+    batch_names = ['batch_ARIMA top grid search runs 2023','batch_VAR top grid search runs 2023 rerun'],
+    title='VAR_ARIMA ensemble overall 2023 rerun category level reformatted 09262023',
     hierarchy_lvl='category',
     model_selection= 'weighted average',
-    output_occ_codes= True
+    output_occ_codes= True,
+    rerun_2023= True,
+    do_results_analysis= True
 )
 
 
@@ -43,10 +46,13 @@ create_ensemble_results(
     panel_indicators=[
         False for i in range(len(var_subcat_runs + arima_subcat_runs))
     ],
-    title='VAR_ARIMA ensemble multiple models subcategory level',
+    title='VAR_ARIMA ensemble overall 2023 rerun subcategory level reformatted 09262023',
+    batch_names = ['batch_ARIMA top grid search runs 2023','batch_VAR top grid search runs 2023 rerun'],
     hierarchy_lvl='subcategory',
     model_selection='weighted average',
-    output_occ_codes=True
+    output_occ_codes=True,
+    rerun_2023= True,
+    do_results_analysis= True
 )
 
 create_ensemble_results(
@@ -58,17 +64,20 @@ create_ensemble_results(
     panel_indicators=[
         False for i in range(len(var_skill_runs + arima_skill_runs))
     ],
-    title='VAR_ARIMA ensemble multiple models skill level',
+    title='VAR_ARIMA ensemble overall 2023 rerun skill level 09262023',
+    batch_names = ['batch_ARIMA top grid search runs 2023','batch_VAR top grid search runs 2023 rerun'],
     hierarchy_lvl='skill',
     model_selection= 'weighted average',
-    output_occ_codes=True
+    output_occ_codes=True,
+    rerun_2023= True,
+    do_results_analysis= True
 )
 
 
 
 
 
-
+# old runs using just the best model
 # create_ensemble_results(
 #     runnames=[
 #         'predicted job posting shares 15_53_15_17_04_2023 VAR for presentation lvl category',

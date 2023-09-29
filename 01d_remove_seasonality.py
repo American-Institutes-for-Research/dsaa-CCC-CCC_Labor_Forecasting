@@ -37,8 +37,8 @@ def prepare_data(df, county):
     df = df.rename({'Unnamed: 0': 'date'}, axis=1)
     df['month'] = df['date'].str[5:7].astype('int')
     df = df.fillna(method='ffill')
-    # 7-55 filter is to remove months with 0 obs
-    df = df.iloc[7:55, :].reset_index(drop=True)
+    # 7-67 filter is to remove months with 0 obs and filter to just August 2018 - August 2023
+    df = df.iloc[7:67, :].reset_index(drop=True)
 
     # create times series index
     date_idx = pd.to_datetime(df['date'])
@@ -94,9 +94,9 @@ def seasonality_loop(df, name, county = None):
         clean_df.to_csv('data/test monthly counts season-adj ' + county + ' ' + name + '.csv')
 
 # remove seasonality for each of the three hierarchical levels
-df = pd.read_csv('data/test monthly counts.csv')
+df = pd.read_csv('data/test monthly counts 2023 update.csv')
 seasonality_loop(df, 'skill')
-df2 = pd.read_csv('data/test monthly counts categories.csv')
+df2 = pd.read_csv('data/test monthly counts categories 2023 update.csv')
 cat_df = df2[[i for i in df2.columns if 'Skill cat:' in i] + ['Unnamed: 0', 'Postings count']]
 seasonality_loop(cat_df, 'category')
 scat_df = df2[[i for i in df2.columns if 'Skill subcat:' in i] + ['Unnamed: 0', 'Postings count']]

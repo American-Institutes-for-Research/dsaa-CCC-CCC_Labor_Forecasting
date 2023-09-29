@@ -28,16 +28,20 @@ cats_dict = {key:list() for key in cats}
 scats_dict = {key:list() for key in scats}
 
 # create dictionaries of all created categories and the skills within the
-first = True
 for label, row in cat_df.iterrows():
     if not pd.isna(row.category_clean):
         cats_dict[row['category_clean']].append(row['name'])
     if not pd.isna(row.subcategory_clean):
         scats_dict[row['subcategory_clean']].append(row['name'])
 
+# code for restarting, remove if starting from scratch
+#first = True
+first = False
+tot_df = pd.read_csv('data/test monthly counts categories 2023 update.csv', index_col=0)
 for idx,df in enumerate(pd.read_csv('data/2023_update/AIR Datapull Expanded.csv', chunksize=10000)):
-    if idx > -1:
-        print('chunk', idx)
+    print('chunk', idx)
+    #if idx > -1:
+    if idx > 307:
         with open('working/01b_tracker.txt', 'w') as file:
             file.write(str(idx))
             file.close()
@@ -58,7 +62,7 @@ for idx,df in enumerate(pd.read_csv('data/2023_update/AIR Datapull Expanded.csv'
 
         # establish range of dates to be analyzed
         min_date = datetime.date(2018, 1, 1)
-        max_date = datetime.date(2022, 8, 1)
+        max_date = datetime.date(2023, 8, 1)
         df = df.loc[df.POSTED > min_date]
         df = df.loc[df.POSTED < max_date]
 
@@ -94,7 +98,7 @@ for idx,df in enumerate(pd.read_csv('data/2023_update/AIR Datapull Expanded.csv'
         cdf['Postings count'] = 0
 
         # for each month from 2018-2022...
-        dates = [int(str(y) + str(m).zfill(2)) for y in range(2018, 2023) for m in range(1, 13)]
+        dates = [int(str(y) + str(m).zfill(2)) for y in range(2018, 2024) for m in range(1, 13)]
         for yyyymm in dates:
             # ...filter to only the postings from that month
             filt_df = skilldf.loc[(skilldf.POSTED_YYYYMM <= yyyymm) &
@@ -121,7 +125,7 @@ for idx,df in enumerate(pd.read_csv('data/2023_update/AIR Datapull Expanded.csv'
             new_cols = [i for i in cdf.columns if i not in tot_df.columns]
             tot_df = tot_df.merge(cdf[new_cols].fillna(0), left_index=True, right_index=True, how='left')
             tot_df = tot_df.fillna(0)
-            tot_df.to_csv('data/test monthly counts categories.csv')
+            tot_df.to_csv('data/test monthly counts categories 2023 update.csv')
         pass
 
 

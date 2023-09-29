@@ -1,0 +1,436 @@
+,July 2022 actual,July 2024 predicted,Percent change,Monthly average obs
+Skill subcat: Microsoft Development Tools,0.0075792170242298,,,2616.0625
+Skill subcat: Software Development,0.080185760349725,,,24492.270833333332
+Skill subcat: Application Programming Interface (API),0.0226165104735778,,,6190.895833333333
+Skill subcat: Basic Electrical Systems,0.0141154602055381,,,3948.7708333333335
+Skill subcat: Identity and Access Management,0.0117505601928657,,,3423.1458333333335
+Skill subcat: Interior Design,0.0014628716223301,,,430.6458333333333
+Skill subcat: Animation and Game Design,0.0029127078960592,,,964.5625
+Skill subcat: Digital Design,0.0032152057368805,,,1012.875
+Skill subcat: Drafting and Engineering Design,0.0220619573141447,,,6476.25
+Skill subcat: Photo/Video Production and Technology,0.0074201187980431,,,2173.1875
+Skill subcat: People Management,0.0766248290898198,,,24415.604166666668
+Skill subcat: Art and Illustration,0.0024325850411874,,,785.2291666666666
+Skill subcat: Graphic and Visual Design Software,0.0102269007427857,,,3483.4375
+Skill subcat: Oncology,0.0080959251378229,,,2515.8958333333335
+Skill subcat: Graphic and Visual Design,0.0091970251405602,,,2837.8333333333335
+Skill subcat: Artificial Intelligence and Machine Learning (AI/ML),0.0124121149900873,,,3341.875
+Skill subcat: Wireless Technologies,0.00422311404435,,,1215.4583333333333
+Skill subcat: Health Information Management and Medical Records,0.0389299833574407,,,11414.395833333334
+Skill subcat: Medical Billing and Coding,0.0059542441836824,,,2029.625
+Skill subcat: Financial Regulation,0.0068286209216002,,,2245.9583333333335
+Skill subcat: System Design and Implementation,0.0434972268260935,,,12766.6875
+Skill subcat: Compensation and Benefits,0.0100601992279643,,,2155.1666666666665
+Skill subcat: Mental and Behavioral Health Specialties,0.0264208825190708,,,7839.0
+Skill subcat: Financial Advisement,0.0014783425349247,,,419.8541666666667
+Skill subcat: Networking Hardware,0.0069776561997749,,,1945.3333333333333
+Skill subcat: Telecommunications,0.0136550056515194,,,4239.020833333333
+Skill subcat: Lean Manufacturing,0.0126539145458309,,,3745.6875
+Skill subcat: Computer Hardware,0.0078942334129992,,,2422.6041666666665
+Skill subcat: Network Protocols,0.0116002639699821,,,3749.9791666666665
+Skill subcat: Web Analytics and SEO,0.0089943646271891,,,2923.7916666666665
+Skill subcat: Network Security,0.008732759689979,,,2850.375
+Skill subcat: Mental Health Therapies,0.0102034637984375,,,3153.4166666666665
+Skill subcat: Machinery,0.0498612416120834,,,14250.104166666666
+Skill subcat: Electrical Power,0.0046135469245787,,,1371.25
+Skill subcat: Insurance and Warranty Claims Processing,0.004484522645293,,,1298.7916666666667
+Skill subcat: Databases,0.0303453099433518,,,9755.541666666666
+Skill subcat: Instructional and Curriculum Design,0.0168092310650224,,,3955.3125
+Skill subcat: Special Education,0.0067762457411606,,,1745.7916666666667
+Skill subcat: Payroll,0.0066236077925037,,,1943.5208333333333
+Skill subcat: Human Resources Software,0.0130657508720454,,,3592.7916666666665
+Skill subcat: Accounting and Finance Software,0.0115421142029674,,,3938.9166666666665
+Skill subcat: Safety and Surveillance Technology,0.0060117092602316,,,1915.125
+Skill subcat: Engineering Software,0.0082671809820349,,,2468.3125
+Skill subcat: Networking Software,0.0019960836096703,,,683.6041666666666
+Skill subcat: Simulation and Simulation Software,0.0022304840073642,,,584.8958333333334
+Skill subcat: Construction Inspection,0.0069249207654878,,,1886.3541666666667
+Skill subcat: Laboratory Research,0.0166632463271373,,,4731.604166666667
+Skill subcat: Other Programming Languages,0.0191847694181796,,,6124.729166666667
+Skill subcat: Software Development Tools,0.0266616110513544,,,7602.5625
+Skill subcat: Scripting Languages,0.0402278126944512,,,11933.416666666666
+Skill subcat: Nuclear Energy,0.0004513308426079,,,129.64583333333334
+Skill subcat: Telecommunications Equipment and Installation,0.0010632487334743,,,359.6041666666667
+Skill subcat: Natural Language Processing (NLP),0.0014011142142481,,,407.0625
+Skill subcat: Writing and Editing,0.1508013024726217,,,46038.083333333336
+Skill subcat: Health Care Procedure and Regulation,0.0477641473709096,,,13759.854166666666
+Skill subcat: Waste Management,0.0021572047230068,,,616.5208333333334
+Skill subcat: Software Quality Assurance,0.0366057252289106,,,10656.6875
+Skill subcat: Augmented and Virtual Reality (AR/VR),0.0008146709517624,,,189.02083333333334
+Skill subcat: Air Transportation,0.0022502880509498,,,536.8541666666666
+Skill subcat: Pharmacology and Drug Discovery,0.0049370758329272,,,1472.1041666666667
+Skill subcat: Computer Science,0.1058629590959856,,,31422.416666666668
+Skill subcat: Project Management,0.1567055783580921,,,46521.208333333336
+Skill subcat: General Accounting,0.0823851328330917,,,25848.0
+Skill subcat: Tax,0.0104214249846984,,,3651.1041666666665
+Skill subcat: Cybersecurity,0.0215864739232047,,,6695.375
+Skill subcat: Quality Assurance and Control,0.0860516992923963,,,24565.291666666668
+Skill subcat: Enterprise Application Management,0.0106479113797232,,,3475.5
+Skill subcat: Data Analysis,0.0858176246362711,,,25394.458333333332
+Skill subcat: Automotive Technologies,0.0042727714615572,,,1143.2708333333333
+Skill subcat: Malware Protection,0.0009909337897648,,,324.6875
+Skill subcat: Cloud Solutions,0.0358803367347518,,,9566.770833333334
+Skill subcat: Backup Software,0.0023675886920955,,,752.2916666666666
+Skill subcat: Scripting,0.0153189406572685,,,5037.0625
+Skill subcat: Cloud Computing,0.0200478776385052,,,5341.3125
+Skill subcat: Version Control,0.0160584117474429,,,4510.125
+Skill subcat: Data Science,0.0301147405827669,,,8816.9375
+"Skill subcat: Extraction, Transformation, and Loading (ETL)",0.011471596312311,,,3506.6875
+Skill subcat: Internet of Things (IoT),0.0031793044646526,,,948.5208333333334
+Skill subcat: Configuration Management,0.007914308706683,,,2649.0208333333335
+Skill subcat: Business Intelligence Software,0.0211712696223225,,,5956.833333333333
+Skill subcat: Logistics,0.0090108898509306,,,2617.6458333333335
+Skill subcat: General Medicine,0.0575404022934573,,,17394.75
+Skill subcat: Cardiology,0.007171171643295,,,2310.5416666666665
+Skill subcat: Surgery,0.0142967826791528,,,4479.5
+Skill subcat: Medical Imaging,0.0120192679764648,,,2886.4166666666665
+Skill subcat: Physical Abilities,0.1097524928235464,,,33999.708333333336
+Skill subcat: Initiative and Leadership,0.4289251133461503,,,131174.75
+Skill subcat: Biology,0.0088816358856996,,,2504.9375
+Skill subcat: Audio Production and Technology,0.0016253000914807,,,508.8541666666667
+Skill subcat: Manufacturing Processes,0.0196239363100185,,,5617.291666666667
+Skill subcat: Power Tools,0.0099729394939458,,,2881.8333333333335
+Skill subcat: Infectious Diseases,0.0143928775893357,,,3504.4166666666665
+Skill subcat: Physics,0.0041701690319771,,,1220.6041666666667
+Skill subcat: HVAC,0.0143724949166365,,,4188.3125
+Skill subcat: Chemistry,0.0089560340388952,,,2546.6041666666665
+Skill subcat: Mathematics and Mathematical Modeling,0.0403415478319987,,,13348.375
+Skill subcat: Document Management,0.0209463746509958,,,6113.916666666667
+Skill subcat: Property Law,0.0035014404264334,,,1007.6666666666666
+Skill subcat: Architectural Design,0.0075206285112937,,,2031.6875
+Skill subcat: Education Administration,0.0055587648569281,,,1261.5833333333333
+Skill subcat: Student Support and Services,0.0093750269848098,,,1704.8125
+Skill subcat: Language Competency,0.0884092996505473,,,31181.020833333332
+"Skill subcat: Language Interpretation, Translation, and Studies",0.0027767684669778,,,1027.3125
+Skill subcat: Library and Archiving,0.0041145284049641,,,1107.7708333333333
+Skill subcat: Program Management,0.0211003952653442,,,5946.208333333333
+Skill subcat: Teaching,0.078608257805847,,,22125.4375
+Skill subcat: Product Inspection,0.0030393089843955,,,1048.0833333333333
+Skill subcat: Mobile Development,0.0052006652130009,,,1750.4375
+"Skill subcat: Engineering, Scientific, and Technical Instruments",0.0094353444088937,,,2819.0625
+Skill subcat: Systems Administration,0.0139508678839874,,,4436.416666666667
+Skill subcat: Engineering Practices,0.0129091247439964,,,3601.0208333333335
+Skill subcat: Mainframe Technologies,0.0010305344274521,,,379.5625
+Skill subcat: Safety and Security,0.0178120997677291,,,5698.166666666667
+Skill subcat: General Networking,0.0178614333616584,,,5683.520833333333
+Skill subcat: Query Languages,0.034694867488762,,,10562.020833333334
+Skill subcat: Community and Social Work,0.0182746421145385,,,5289.875
+Skill subcat: Occupational Health and Safety,0.1006565045555513,,,28043.520833333332
+Skill subcat: Billing and Invoicing,0.0554660570057876,,,17456.333333333332
+Skill subcat: Banking Services,0.0176581492346474,,,5462.333333333333
+Skill subcat: Financial Analysis,0.0253614145097182,,,7749.416666666667
+Skill subcat: Account Management,0.0165473269818341,,,6141.145833333333
+Skill subcat: Marketing Strategy and Techniques,0.102734927758677,,,33225.895833333336
+Skill subcat: Internal Controls,0.011521254078882,,,3438.6458333333335
+Skill subcat: Financial Reporting,0.0290511018269415,,,8925.958333333334
+Skill subcat: Accounts Payable and Receivable,0.0208477380681231,,,6801.1875
+Skill subcat: Specialized Accounting,0.0058522101573834,,,1790.2083333333333
+Skill subcat: Construction Estimating,0.0020591271397237,,,676.2291666666666
+Skill subcat: Pharmacy,0.0269962660959367,,,7536.5625
+"Skill subcat: Welding, Brazing, and Soldering",0.0058693437659444,,,1735.6041666666667
+Skill subcat: Childhood Education and Development,0.0159620129628201,,,5669.875
+"Skill subcat: Elements, Compounds, and Materials",0.0038198268136782,,,1025.9791666666667
+Skill subcat: Music,0.0012072075984936,,,337.2708333333333
+Skill subcat: Mergers and Acquisitions,0.008631055960196,,,2972.9583333333335
+Skill subcat: Procurement,0.0454522196483569,,,13226.520833333334
+Skill subcat: Dermatology,0.0012921107196062,,,428.0
+Skill subcat: Theatre and Performance Art,0.0005746252189641,,,137.1875
+Skill subcat: General Science and Research,0.1008932298617566,,,30086.958333333332
+"Skill subcat: Water Supply, Testing, and Treatment",0.0031122762266276,,,883.5416666666666
+Skill subcat: Marketing Software,0.0019821903508263,,,837.0625
+Skill subcat: Personal Attributes,0.3440959338353446,,,108174.70833333333
+Skill subcat: Communication,0.466441092839658,,,146151.58333333334
+Skill subcat: Signal Processing,0.0012807100767434,,,351.5625
+Skill subcat: Physical Therapy,0.0166512658309639,,,5079.145833333333
+Skill subcat: Nursing and Patient Care,0.0769286778997013,,,22294.854166666668
+Skill subcat: Hardware Description Languages (HDL),0.0003690664808314,,,90.89583333333333
+Skill subcat: Data Management,0.0343993113381126,,,10375.3125
+Skill subcat: Business Solutions,0.0432983808449874,,,13098.333333333334
+"Skill subcat: Policy Analysis, Research, and Development",0.0319375589514539,,,8116.020833333333
+Skill subcat: Business Analysis,0.0584578789359206,,,16456.6875
+Skill subcat: Home Health Care and Assisted Living,0.0374704921520305,,,10987.625
+Skill subcat: Cost Accounting,0.011939633594447,,,3669.6458333333335
+Skill subcat: Intelligence Collection and Analysis,0.0022310240598027,,,647.8541666666666
+Skill subcat: Financial Management,0.0290266430984405,,,8968.166666666666
+Skill subcat: Statistics,0.012156004694354,,,3763.6041666666665
+Skill subcat: Business Operations,0.2408526028709285,,,71845.83333333333
+Skill subcat: Alternative Therapy,0.0035180009685822,,,1033.4583333333333
+Skill subcat: Emergency and Intensive Care,0.0439720806309967,,,13064.3125
+Skill subcat: Rehabilitation,0.0128714041711824,,,3985.4166666666665
+Skill subcat: Nephrology,0.0039197870687418,,,797.2708333333334
+Skill subcat: Pulmonology,0.0051386791910326,,,1548.0416666666667
+Skill subcat: Business Intelligence,0.0279565537260048,,,8304.229166666666
+Skill subcat: Advertising,0.0066236360651303,,,2176.4791666666665
+Skill subcat: Online Advertising,0.0055132932485808,,,1768.0833333333333
+Skill subcat: Labor Compliance,0.0054981703346304,,,1241.0416666666667
+Skill subcat: Coaching and Athletic Training,0.0041835840642344,,,1216.7083333333333
+Skill subcat: Streaming Media Systems,0.0006873824407063,,,198.64583333333334
+Skill subcat: Clinical Trials,0.0079740656303482,,,2466.6666666666665
+Skill subcat: Automation Engineering,0.0092505420772514,,,2649.2291666666665
+Skill subcat: Web Design and Development,0.0260937067698186,,,8962.458333333334
+Skill subcat: Mobility Assistance,0.0018602649894743,,,629.1666666666666
+Skill subcat: Education Software and Technology,0.0058508375471636,,,1560.0
+Skill subcat: Optical Engineering,0.0008042768007631,,,224.3125
+Skill subcat: Critical Thinking and Problem Solving,0.3126452597933495,,,94904.33333333333
+Skill subcat: Green Architecture,0.0004169595521492,,,94.64583333333333
+Skill subcat: Counseling Services,0.0099355635097825,,,2742.125
+Skill subcat: Office and Productivity Equipment and Technology,0.1939976762265628,,,62015.0
+Skill subcat: Material Handling,0.0378864321301807,,,12472.020833333334
+"Skill subcat: Molecular, Cellular, and Microbiology",0.0045875956711685,,,1348.8958333333333
+Skill subcat: Regulation and Legal Compliance,0.1508366308549703,,,46648.5
+Skill subcat: Gastroenterology,0.0020615442732137,,,552.75
+Skill subcat: Mental Health Diseases and Disorders,0.0072968348643504,,,2379.125
+Skill subcat: Administrative Support and Clerical Tasks,0.1030068047956258,,,32640.604166666668
+Skill subcat: Media Production,0.0070429179690712,,,2094.2291666666665
+Skill subcat: Content Management Systems,0.0046185324894005,,,1562.4375
+Skill subcat: Web Content,0.0011365572311693,,,294.7083333333333
+Skill subcat: User Interface and User Experience (UI/UX) Design,0.0129870537064605,,,3826.6458333333335
+Skill subcat: Integrated Development Environments (IDEs),0.0040177447756862,,,1082.6875
+Skill subcat: Java,0.0224730385940277,,,7121.229166666667
+Skill subcat: Endocrinology,0.0017281868565407,,,602.0625
+Skill subcat: Biotechnology,0.0036418757148795,,,788.4583333333334
+Skill subcat: First Aid,0.0182226696070208,,,4785.416666666667
+Skill subcat: Training Programs,0.0102652140259198,,,2774.9583333333335
+Skill subcat: Emergency Services,0.0108022407042957,,,2571.125
+Skill subcat: General Shipping and Receiving,0.0458436825819117,,,15365.708333333334
+Skill subcat: Energy Management,0.002759021092011,,,805.1458333333334
+Skill subcat: Manufacturing Design,0.0023349913449752,,,543.8958333333334
+Skill subcat: Middleware,0.0050058084988551,,,1726.9583333333333
+Skill subcat: Manufacturing Standards,0.0140243142691874,,,4303.770833333333
+Skill subcat: Robotics,0.0014637997571199,,,372.9583333333333
+Skill subcat: Transportation Operations,0.0118162204442764,,,3699.3125
+Skill subcat: Sports and Recreation,0.0030827968644075,,,878.2083333333334
+Skill subcat: Medical Science and Research,0.0144669564621787,,,4286.0625
+Skill subcat: Specialized Sales,0.0200829841121406,,,8142.333333333333
+Skill subcat: Business Consulting,0.034858095334036,,,10483.5
+Skill subcat: Military Technology and Weapons,0.0003006100361056,,,178.22916666666666
+Skill subcat: Groundskeeping and Yard Care,0.0091436873141165,,,2481.5833333333335
+"Skill subcat: Fire Prevention, Safety, and Control",0.0074545140979864,,,2025.0625
+Skill subcat: Heavy Equipment Operation,0.0279111126871892,,,9166.208333333334
+Skill subcat: Surveying and Cartography,0.0013800223711004,,,387.6041666666667
+Skill subcat: Aerospace Engineering,0.0009366007584867,,,256.3541666666667
+Skill subcat: Earth and Space Science,0.0027555618825713,,,763.1666666666666
+Skill subcat: Materials Science and Engineering,0.0043529582977807,,,1145.2916666666667
+Skill subcat: Creative Design,0.0175855873854809,,,4938.145833333333
+Skill subcat: Eye Care,0.0040473313324721,,,1121.125
+Skill subcat: Digital Marketing,0.0158310636918815,,,5162.666666666667
+Skill subcat: Legal Proceedings,0.0073609967931966,,,2418.4791666666665
+Skill subcat: Dance,0.0002317176692248,,,53.229166666666664
+Skill subcat: Social Studies,0.0136903629548495,,,3809.8958333333335
+Skill subcat: Literature and Literary Studies,0.0008420678460557,,,228.95833333333334
+Skill subcat: Client Support,0.0167389537464493,,,5019.604166666667
+Skill subcat: Business Management,0.2606444744047371,,,82229.4375
+Skill subcat: Hematology,0.0075070641938518,,,2112.9791666666665
+Skill subcat: Market Analysis,0.0327059292026843,,,10171.375
+Skill subcat: Data Collection,0.0161294483412122,,,4463.270833333333
+Skill subcat: Agile Software Development,0.0468086405587617,,,12681.333333333334
+Skill subcat: Product Management,0.036152189787833,,,9708.854166666666
+Skill subcat: Geriatrics,0.0067051361981363,,,1943.0
+Skill subcat: Process Improvement and Optimization,0.1114987313328448,,,31322.8125
+Skill subcat: Agricultural Management and Operations,0.0002875993251274,,,61.770833333333336
+Skill subcat: Agricultural Research and Agronomy,0.0004213884429796,,,140.85416666666666
+"Skill subcat: Engineering, Other",0.00665960471394,,,1836.5833333333333
+Skill subcat: Agriculture and Crop Farming,0.0023466589060983,,,663.3333333333334
+Skill subcat: Forestry,0.0004946212653511,,,169.3125
+Skill subcat: Vehicle Repair and Maintenance,0.0214163933240085,,,6055.708333333333
+Skill subcat: General Repairs and Maintenance,0.0157755443681628,,,4273.0
+Skill subcat: Transportation Security,0.0004229221582053,,,111.70833333333333
+Skill subcat: Hand Tools,0.0120041703810321,,,3781.9375
+Skill subcat: Air Quality and Emissions,0.0008414602004799,,,160.70833333333334
+Skill subcat: General Construction and Construction Labor,0.0205691102204971,,,6182.916666666667
+Skill subcat: Environmental Engineering and Restoration,0.0011311186842767,,,298.875
+Skill subcat: Mechanical Engineering,0.0178728041830695,,,5019.770833333333
+Skill subcat: Beauty and Body Treatments and Alterations,0.0043415260394714,,,1038.8125
+Skill subcat: Food and Beverage,0.0888955953488589,,,25830.6875
+Skill subcat: Economics,0.0169572880012732,,,5056.0625
+Skill subcat: Travel and Tourism,0.0046711979075805,,,1460.5625
+Skill subcat: IT Management,0.0277067395686012,,,8061.9375
+Skill subcat: Anesthesiology,0.0056291043345181,,,1697.125
+Skill subcat: Servers,0.0073947502792131,,,2873.3333333333335
+Skill subcat: iOS Development,0.0044590044816693,,,1332.4791666666667
+Skill subcat: Enterprise Information Management,0.0038185573664784,,,1228.0208333333333
+Skill subcat: Patient Education and Support,0.0259655205931247,,,7356.833333333333
+Skill subcat: General Medical Tests and Procedures,0.0289388198260561,,,7990.5
+Skill subcat: Financial Trading,0.0135720376296959,,,4062.8333333333335
+Skill subcat: Hotels and Accommodations,0.0034492183083454,,,589.6041666666666
+Skill subcat: Litigation and Civil Justice,0.0159836882980692,,,4759.770833333333
+Skill subcat: Oil and Gas,0.0042018542815101,,,1358.1666666666667
+Skill subcat: Ground Passenger Transportation,0.0005691391322555,,,157.29166666666666
+Skill subcat: Genetics,0.0028288387186628,,,713.1458333333334
+Skill subcat: Electrical and Computer Engineering,0.0181088521877139,,,4876.875
+Skill subcat: Immunology,0.0016455758042541,,,513.7083333333334
+Skill subcat: Distributed Computing,0.0048830938276151,,,1505.4166666666667
+Skill subcat: Computer-Aided Manufacturing,0.0026672177828528,,,843.625
+Skill subcat: Clean Energy,0.0009903875499921,,,223.85416666666666
+Skill subcat: Investment Management,0.0184111523750675,,,5392.375
+Skill subcat: General Lending,0.0132468079082508,,,4679.895833333333
+Skill subcat: Electronics Engineering,0.0048444966403111,,,1466.5208333333333
+Skill subcat: Oral and Dental Care,0.0061763397388061,,,1861.6666666666667
+Skill subcat: Data Storage,0.0070073640306871,,,2165.0416666666665
+Skill subcat: Web Services,0.0247871395089676,,,6983.895833333333
+Skill subcat: E-Commerce,0.0046473218600608,,,1398.375
+Skill subcat: Image Analysis,0.0014398578413719,,,382.3333333333333
+Skill subcat: Virtualization and Virtual Machines,0.0073875636517677,,,2357.7708333333335
+Skill subcat: Pathology,0.0035356861214488,,,1013.0
+Skill subcat: Construction Management,0.0141864604341264,,,4319.895833333333
+Skill subcat: Obstetrics and Gynecology (OBGYN),0.0045179071017521,,,1693.875
+Skill subcat: Electronic Hardware,0.0033718680608846,,,1019.875
+Skill subcat: Neurology,0.0036571274616521,,,1133.5625
+Skill subcat: Circuitry,0.0027216906073122,,,908.9375
+Skill subcat: Medical Support,0.0185608258343825,,,5546.083333333333
+Skill subcat: Operating Systems,0.0218378180393551,,,7593.104166666667
+Skill subcat: Urology,0.0012232935486361,,,371.2916666666667
+Skill subcat: Injury Treatment,0.0031709888223108,,,714.3125
+Skill subcat: Animal Care,0.0016134258690525,,,470.6041666666667
+Skill subcat: Livestock Farming,0.0004862054143438,,,122.66666666666667
+Skill subcat: Animal Health and Veterinary Medicine,0.0020676137922629,,,666.875
+Skill subcat: Urban and Regional Planning,0.0021474874092948,,,603.2291666666666
+Skill subcat: Budget Management,0.0346541062374175,,,10258.020833333334
+Skill subcat: Insurance,0.0054484323386102,,,2115.4166666666665
+Skill subcat: Metal Fabrication,0.0034174707910001,,,1085.75
+Skill subcat: IT Automation,0.0186552600053642,,,4949.5625
+Skill subcat: Radio Frequency (RF),0.0019441066402041,,,715.2916666666666
+Skill subcat: Orthopedics,0.0042688349017362,,,1355.25
+Skill subcat: Nutrition and Diet,0.0032263947781449,,,923.7916666666666
+Skill subcat: Log Management,0.0009238345361283,,,438.9791666666667
+Skill subcat: Database Architecture and Administration,0.0124613134047845,,,4138.520833333333
+Skill subcat: Facility Management and Maintenance,0.0134172888977679,,,3760.0625
+Skill subcat: Construction Painting,0.0068758422585642,,,1895.8958333333333
+Skill subcat: JavaScript and jQuery,0.0067508858733146,,,2475.5208333333335
+Skill subcat: Textiles,0.0016370917030354,,,507.6875
+Skill subcat: Retail Sales,0.03646706790889,,,13206.625
+Skill subcat: Test Automation,0.0096562252528299,,,2514.7291666666665
+Skill subcat: Scheduling,0.0646577663438855,,,20729.0625
+Skill subcat: Basic Technical Knowledge,0.0962293334838812,,,33302.125
+Skill subcat: Technical Support and Services,0.0242961838433708,,,7279.895833333333
+Skill subcat: Appliance Repair and Maintenance,0.0027870002196757,,,810.2916666666666
+Skill subcat: Extensible Languages and XML,0.0060303455638356,,,1859.5416666666667
+Skill subcat: Ecology,0.0011202947206941,,,202.375
+Skill subcat: Mortgage Lending,0.0054840315773564,,,2411.4791666666665
+Skill subcat: Customer Relationship Management (CRM),0.0476236350677319,,,15896.145833333334
+Skill subcat: Aquaculture,4.019430832641653e-05,,,10.791666666666666
+Skill subcat: Landscaping and Horticulture,0.0048779697158078,,,1359.0625
+Skill subcat: Content Development and Management,0.0137644148407113,,,3801.7708333333335
+Skill subcat: Geospatial Information and Technology,0.0027040936986009,,,805.0208333333334
+Skill subcat: Civil and Architectural Engineering,0.0072344120375347,,,2020.5833333333333
+Skill subcat: Social Media,0.0121526152401218,,,3780.5833333333335
+Skill subcat: Hazardous Materials Management,0.0052428584895989,,,1532.5625
+Skill subcat: Road and Bridge Construction,0.0007945387906714,,,238.41666666666666
+Skill subcat: Roofing,0.0035749526554122,,,1225.375
+Skill subcat: Production and Assembly,0.0091191492763303,,,2864.8958333333335
+Skill subcat: Financial Accounting,0.0137539749100156,,,4557.395833333333
+Skill subcat: Financial Modeling,0.0101549620273126,,,3142.5208333333335
+Skill subcat: Plant Operations and Management,0.0148822657596852,,,4606.3125
+Skill subcat: Business Strategy,0.0717390997687148,,,22132.5
+Skill subcat: Human Resources Management and Planning,0.0298403192297332,,,7721.770833333333
+Skill subcat: Medical Equipment and Technology,0.0141714187845112,,,4428.791666666667
+Skill subcat: Inventory and Warehousing,0.103026152555447,,,36450.354166666664
+Skill subcat: Merchandising,0.0599907529568466,,,19772.0625
+Skill subcat: General Sales Practices,0.2148448871644699,,,73968.91666666667
+Skill subcat: Risk Management,0.0345312506629699,,,9790.395833333334
+Skill subcat: Collaborative Software,0.0117891581289526,,,3325.375
+Skill subcat: Customer Service,0.294853594479653,,,94950.97916666667
+Skill subcat: Geological Engineering,0.0012438746761528,,,335.9583333333333
+Skill subcat: Dictation,0.0043011164861994,,,1394.9166666666667
+"Skill subcat: Ear, Nose, and Throat",0.003102476912589,,,321.875
+Skill subcat: Auditing,0.0638678442354475,,,19427.75
+Skill subcat: Payment Processing and Collection,0.0200321388174851,,,6636.1875
+Skill subcat: Bioinformatics,0.0003411914970012,,,106.72916666666667
+Skill subcat: Microsoft Windows,0.001186048235033,,,417.5
+Skill subcat: Roads and Drainage,0.0014653565411276,,,459.0833333333333
+Skill subcat: Criminal Investigation and Forensics,0.0021455304379533,,,723.2916666666666
+Skill subcat: Industrial Engineering,0.0040694547820438,,,1098.2916666666667
+Skill subcat: Recruitment,0.0161274481500863,,,4480.708333333333
+Skill subcat: Real Estate Sales,0.0102401887352861,,,3342.1458333333335
+Skill subcat: General Finance,0.0857568467110514,,,26207.479166666668
+Skill subcat: Business Communications,0.0195648487125705,,,5757.166666666667
+Skill subcat: Industry Specific Marketing,0.0016934437252293,,,578.0208333333334
+Skill subcat: Cash Management,0.0070847708877657,,,2219.2916666666665
+Skill subcat: Firmware,0.0011566185008503,,,372.6458333333333
+Skill subcat: Business Continuity,0.0097875039184533,,,2792.3958333333335
+Skill subcat: Electronics Manufacturing,0.0004513535789469,,,132.6875
+Skill subcat: Plumbing,0.0123120924713121,,,3507.0208333333335
+Skill subcat: Performance Management,0.0321459954864668,,,9115.208333333334
+Skill subcat: Sea and Waterway Transportation,0.0001505671594602,,,47.770833333333336
+Skill subcat: Events and Conferences,0.0091781846340444,,,2397.0833333333335
+Skill subcat: Insulation,0.0004551446660586,,,120.10416666666667
+Skill subcat: Military Operations,0.0020504106029707,,,447.375
+Skill subcat: Health Care Administration,0.0326693529728085,,,10263.979166666666
+Skill subcat: Cleaning and Janitorial Services,0.0487814696077991,,,14827.979166666666
+Skill subcat: Neuroscience,0.0005472375344525,,,143.35416666666666
+Skill subcat: Carpentry,0.0076331281246826,,,2315.8958333333335
+Skill subcat: Environmental Regulations,0.003301686022784,,,871.3125
+Skill subcat: Contract Management,0.0286257618473191,,,8588.791666666666
+Skill subcat: Cryptocurrency,0.0005376429028774,,,82.0
+Skill subcat: Search Engines,0.0017285067058631,,,558.2083333333334
+Skill subcat: Chemical and Biomedical Engineering,0.0029239780468831,,,735.0625
+Skill subcat: Environment and Resource Management,0.0078748431565157,,,1824.7083333333333
+Skill subcat: Public Health and Disease Prevention,0.0104115390041805,,,2624.4166666666665
+Skill subcat: Disaster Management,0.0056403652858615,,,1407.0416666666667
+Skill subcat: Process Engineering,0.0097767584435087,,,2768.8958333333335
+Skill subcat: Blockchain,0.0007919528603476,,,199.97916666666666
+Skill subcat: Blood Collection,0.0075396761341866,,,2254.125
+Skill subcat: Electronic Trading,0.0005536405960848,,,226.52083333333334
+Skill subcat: Legal Support,0.0047353998802635,,,1702.1875
+Skill subcat: C and C++,0.0080481189939921,,,2584.3958333333335
+Skill subcat: Food Science and Processing,0.004630389502055,,,1622.7291666666667
+Skill subcat: Data Visualization,0.0075413595641899,,,1875.7291666666667
+Skill subcat: Brand Management,0.016756619316528,,,5446.791666666667
+Skill subcat: Journalism,0.0041707664583568,,,1303.8125
+Skill subcat: Promotions and Campaigns,0.0154674686707701,,,4904.854166666667
+Skill subcat: Industrial Design,0.0057607213307424,,,1476.0833333333333
+Skill subcat: Electromechanical Engineering,0.0020563878611489,,,627.8958333333334
+Skill subcat: Cannabis,0.0011388291522103,,,254.72916666666666
+Skill subcat: Property Management,0.0055716508889033,,,1801.5
+Skill subcat: Public Relations,0.0182947901369437,,,5803.458333333333
+Skill subcat: Commercial Lending,0.0019081779064954,,,554.4166666666666
+"Skill subcat: Company, Product, and Service Knowledge",0.027226472844604,,,9682.416666666666
+Skill subcat: Social Skills,0.1200276049041955,,,35028.333333333336
+Skill subcat: Business Leadership,0.0222702190992017,,,6306.625
+Skill subcat: Business-to-Business (B2B) Sales,0.0161817325931755,,,5459.833333333333
+Skill subcat: Government Assistance,0.0024364122165867,,,508.8125
+Skill subcat: Product Development,0.0363749102605336,,,10520.895833333334
+Skill subcat: Employee Training,0.0342991983540211,,,9816.1875
+Skill subcat: Supply Chain Management,0.0321881978404363,,,9251.208333333334
+Skill subcat: Poison Control,9.47492162774744e-06,,,2.8125
+Skill subcat: Climate Change,0.0001420891785875,,,19.666666666666668
+Skill subcat: Fundraising and Crowdsourcing,0.0060665955532558,,,1670.3541666666667
+Skill subcat: Cash Register Operation,0.0460917853306629,,,13963.5
+Skill subcat: Child Care,0.0004650007728064,,,168.79166666666666
+Skill subcat: Religious Studies and Services,0.000934829896486,,,296.5833333333333
+Skill subcat: Hepatology,0.0009534268635344,,,236.375
+Skill subcat: Solution Sales Engineering,0.0072876419602743,,,2991.6041666666665
+Skill subcat: Video and Web Conferencing,0.0078633192833829,,,1887.2083333333333
+Skill subcat: Rail Transportation,0.0004800875494516,,,135.41666666666666
+Skill subcat: Pediatrics,0.012934911143419,,,4244.583333333333
+Skill subcat: Prospecting and Qualification,0.0321088657538708,,,12037.25
+Skill subcat: Clinical Informatics,0.0114577192458597,,,2870.8333333333335
+Skill subcat: Mining Engineering,0.0001066901549275,,,34.333333333333336
+Skill subcat: Power Generation,0.0009996437611318,,,253.0
+Skill subcat: Structured Finance,0.000712602414395,,,201.4375
+Skill subcat: Employee Relations,0.0145680022649278,,,3457.6875
+Skill subcat: Higher Education,0.004449268389158,,,1124.3125
+Skill subcat: Supplier Management,0.0146758971785322,,,4147.291666666667
+Skill subcat: Electrical Construction,0.0020896564563376,,,614.8333333333334
+Skill subcat: Underwriting,0.0077575176921398,,,2714.5416666666665
+Skill subcat: Real Estate Development,0.0005549499700323,,,162.9375
+Skill subcat: Law Enforcement and Criminal Justice,0.0044767914749602,,,1427.9583333333333
+Skill subcat: Natural Gas,0.0006518511996242,,,175.02083333333334
+Skill subcat: Mathematical Software,0.0019659565239484,,,604.9583333333334
+Skill subcat: Concrete and Masonry,0.002314226454144,,,634.8958333333334
+Skill subcat: Equipment Repair and Maintenance,0.0180551456864978,,,4912.916666666667
+Skill subcat: Conservation,0.0004491838569431,,,131.20833333333334
+Skill subcat: Energy Efficiency,0.0007045767932756,,,211.25
+Skill subcat: Funeral and Mortuary Services,0.0003262730908386,,,88.72916666666667
+Skill subcat: Water Energy,2.420170382500996e-05,,,10.375
+Skill subcat: Sales Management,0.0250441210291397,,,9984.375
+Skill subcat: Sales Analysis,0.0046056984636972,,,1657.1458333333333
+Skill subcat: Ground Freight Transportation,0.0097405432314175,,,5059.979166666667
+Skill subcat: Genetic Disorders,0.0002170934336526,,,66.9375
+Skill subcat: Statistical Software,0.0052748387535091,,,1935.4375
+Skill subcat: Environmental Geology,0.0008559023304254,,,239.02083333333334
+Skill subcat: Office Management,0.0181193870705236,,,5670.875
+Skill subcat: Presentation Design,0.0017620292911211,,,577.75
+Skill subcat: Hospitality Services,0.0105858872874136,,,2680.5416666666665
+Skill subcat: Pricing Analysis,0.0044677718936074,,,1385.2083333333333
+Skill subcat: Nuclear Medicine,0.0006170714579521,,,147.58333333333334
