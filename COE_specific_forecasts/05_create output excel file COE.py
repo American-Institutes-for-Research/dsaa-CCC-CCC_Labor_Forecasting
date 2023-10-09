@@ -20,7 +20,7 @@ for coe in coe_names:
     title = 'VAR_ARIMA ensemble '+coe+' skill level'
     min_obs = 50
     model_labels = ['VAR', 'ARIMA']
-    output_label = 'VAR_ARIMA ensemble '+coe+' formatted results 09212023'
+    output_label = 'VAR_ARIMA ensemble '+coe+' 2023 rerun results 09292023'
 
     # load ensemble model results for all three hierarchy levels
     cat_ensemble_df = pd.read_csv('output/predicted changes/ensemble results '+cat_title+'.csv', index_col=0)

@@ -61,7 +61,7 @@ for lvl in lvls:
         scat_df = sub_df
     if lvl == 'Skill':
         skill_df = sub_df
-corr_df.to_excel('output/comparison/correlation of 2022 and 2023 results.xlsx')
+#corr_df.to_excel('output/comparison/correlation of 2022 and 2023 results.xlsx')
 
 scat_df['pred diff'] = abs(scat_df['July 2025 weighted predicted'] - scat_df['July 2024 weighted predicted'])
 skill_df['pred diff'] = abs(skill_df['July 2025 weighted predicted'] - skill_df['July 2024 weighted predicted'])
@@ -74,8 +74,8 @@ scat_df = scat_df.sort_values('pred diff', ascending = False)
 skill_df = skill_df.sort_values('pred diff', ascending = False)
 
 keep_cols = ['July 2022 actual','July 2023 actual', 'July 2024 weighted predicted', 'July 2025 weighted predicted','pred diff','act diff', 'pred_diff - act_diff']
-scat_df[['subcategory'] + keep_cols].head(20).to_excel('output/comparison/top 20 changes in subcategories.xlsx')
-skill_df[['skill'] + keep_cols].head(50).to_excel('output/comparison/top 50 changes in skills.xlsx')
+# scat_df[['subcategory'] + keep_cols].head(20).to_excel('output/comparison/top 20 changes in subcategories.xlsx')
+# skill_df[['skill'] + keep_cols].head(50).to_excel('output/comparison/top 50 changes in skills.xlsx')
 
 # measure RMSE of models
 rmse_df = pd.DataFrame()
